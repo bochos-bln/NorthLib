@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		00442ADB24CAF771009933FF /* Toast.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00442ADA24CAF771009933FF /* Toast.swift */; };
+		0049E6CF251E0FA5002103DD /* FeedbackComposer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0049E6CE251E0FA5002103DD /* FeedbackComposer.swift */; };
 		0058DE40251B30CB000FBD9D /* MonthPicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0058DE3F251B30CB000FBD9D /* MonthPicker.swift */; };
 		008F9A2024864F9400EF5EA5 /* ImageCollectionVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = 008F9A1F24864F9400EF5EA5 /* ImageCollectionVC.swift */; };
 		00E4E36B247E694C00BEEC4A /* ZoomedImageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00E4E36A247E694C00BEEC4A /* ZoomedImageView.swift */; };
@@ -101,6 +102,7 @@
 
 /* Begin PBXFileReference section */
 		00442ADA24CAF771009933FF /* Toast.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Toast.swift; sourceTree = "<group>"; };
+		0049E6CE251E0FA5002103DD /* FeedbackComposer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedbackComposer.swift; sourceTree = "<group>"; };
 		0058DE3F251B30CB000FBD9D /* MonthPicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MonthPicker.swift; sourceTree = "<group>"; };
 		008F9A1F24864F9400EF5EA5 /* ImageCollectionVC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageCollectionVC.swift; sourceTree = "<group>"; };
 		00E4E36A247E694C00BEEC4A /* ZoomedImageView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ZoomedImageView.swift; sourceTree = "<group>"; };
@@ -316,6 +318,7 @@
 				AE08C492240D476300D41E91 /* Theme.swift */,
 				AE86486D248E0EC0007096B4 /* PdfDoc.swift */,
 				C74ED03E25012A22007EB881 /* UIStyleChangeDelegate.swift */,
+				0049E6CE251E0FA5002103DD /* FeedbackComposer.swift */,
 			);
 			path = General;
 			sourceTree = "<group>";
@@ -545,6 +548,7 @@
 				AEAEDFFF2456B4AA00F627FE /* Notification.swift in Sources */,
 				AE7122E923197B4000B715A8 /* DottedLineView.swift in Sources */,
 				AEA2EB15233CD841007AB59D /* ToString.swift in Sources */,
+				0049E6CF251E0FA5002103DD /* FeedbackComposer.swift in Sources */,
 				AE7122E523197B4000B715A8 /* NetAvailability.swift in Sources */,
 				AE80A399244DE1920012DFFA /* CubeLabel.swift in Sources */,
 				AE7122F223197B4000B715A8 /* ViewExtensions.swift in Sources */,
