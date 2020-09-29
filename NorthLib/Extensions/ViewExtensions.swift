@@ -117,21 +117,23 @@ public extension UIView {
   
   /// Pin width of view
   @discardableResult
-  func pinWidth(_ width: CGFloat) -> NSLayoutConstraint {
+  func pinWidth(_ width: CGFloat, priority: UILayoutPriority? = nil) -> NSLayoutConstraint {
     translatesAutoresizingMaskIntoConstraints = false
     let constraint = widthAnchor.constraint(equalToConstant: width)
+    if let prio = priority { constraint.priority = prio }
     constraint.isActive = true
     return constraint
   }
   @discardableResult
-  func pinWidth(_ width: Int) -> NSLayoutConstraint { return pinWidth(CGFloat(width)) }
+  func pinWidth(_ width: Int, priority: UILayoutPriority? = nil) -> NSLayoutConstraint { return pinWidth(CGFloat(width)) }
   
   @discardableResult
-  func pinWidth(to: LayoutDimension, dist: CGFloat = 0, factor: CGFloat = 0) 
+  func pinWidth(to: LayoutDimension, dist: CGFloat = 0, factor: CGFloat = 0, priority: UILayoutPriority? = nil)
     -> NSLayoutConstraint { 
       translatesAutoresizingMaskIntoConstraints = false
       let constraint = widthAnchor.constraint(equalTo: to.anchor, 
         multiplier: factor, constant: dist)
+      if let prio = priority { constraint.priority = prio }
       constraint.isActive = true
       return constraint
   }
@@ -146,14 +148,15 @@ public extension UIView {
     return constraint
   }
   @discardableResult
-  func pinHeight(_ height: Int) -> NSLayoutConstraint { return pinHeight(CGFloat(height)) }
+  func pinHeight(_ height: Int, priority: UILayoutPriority? = nil) -> NSLayoutConstraint { return pinHeight(CGFloat(height), priority: priority) }
   
   @discardableResult
-  func pinHeight(to: LayoutDimension, dist: CGFloat = 0, factor: CGFloat = 0) 
+  func pinHeight(to: LayoutDimension, dist: CGFloat = 0, factor: CGFloat = 0, priority: UILayoutPriority? = nil)
     -> NSLayoutConstraint { 
       translatesAutoresizingMaskIntoConstraints = false
       let constraint = heightAnchor.constraint(equalTo: to.anchor,
         multiplier: factor, constant: dist)
+      if let prio = priority { constraint.priority = prio}
       constraint.isActive = true
       return constraint
   }
@@ -193,10 +196,13 @@ public func pin(_ la: LayoutAnchorY, to: LayoutAnchorY,
 
 /// Pin horizontal anchor of one view to horizontal anchor of another view
 @discardableResult
-public func pin(_ la: LayoutAnchorX, to: LayoutAnchorX, 
-  dist: CGFloat = 0) -> NSLayoutConstraint {
+public func pin(_ la: LayoutAnchorX,
+                to: LayoutAnchorX,
+                dist: CGFloat = 0,
+                priority: UILayoutPriority? = nil) -> NSLayoutConstraint {
   la.view.translatesAutoresizingMaskIntoConstraints = false
   let constraint = la.anchor.constraint(equalTo: to.anchor, constant: dist)
+  if let prio = priority { constraint.priority = prio }
   constraint.isActive = true
   return constraint
 }
