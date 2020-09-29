@@ -460,6 +460,7 @@ open class VerticalSheet: Slider {
   
   /// Move the slider up
   public func slideUp(_ dist: CGFloat) {
+    //WTF
     debug("up: \(dist)")
     guard isOpen else { return }
     UIView.animate(seconds: duration) { [weak self] in

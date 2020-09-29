@@ -71,16 +71,16 @@ public class FeedbackComposer : DoesLog{
       finishClosure(true)
       self.feedbackBottomSheet = nil
     }
-    let height = currentVc.view.bounds.size.height
-      - currentVc.view.safeAreaInsets.top
-      - currentVc.view.safeAreaInsets.bottom
-      - 10
+//    let height = currentVc.view.bounds.size.height
+//      - currentVc.view.safeAreaInsets.top
+//      - currentVc.view.safeAreaInsets.bottom
+//      - 10
 //    print("sh: \(screenHeight)  ctrlH: \(cvcHeight)")//SE both: 667 - StatusBar
     //Tabbar: 44 StatusBar 20 VC 667 - 647 CTRL.V.H => 20 on SE Safe Areas: UIEdgeInsets(top: 20.0, left: 0.0, bottom: 0.0, right: 0.0)
     //XSMax 896 Tabbar inkl SafeArea: 78 Tabbar 44 // StatusBar inkl SafeArea : 44  Safe Areas: UIEdgeInsets(top: 44.0, left: 0.0, bottom: 34.0, right: 0.0)
     // RequestedHeight: DH - SAtop - sh Bottom -x=10
 //    print("Safe Areas: \(currentVc.view.safeAreaInsets)")
-    self.feedbackBottomSheet?.coverage = height
+    self.feedbackBottomSheet?.coverageRatio = 1.0
     
     
 //    if UIApplication.shared.delegate?.window??.safeAreaInsets.bottom ?? 0 > 0 {
@@ -118,22 +118,29 @@ public class FeedbackViewController : UIViewController{
   
   public override func viewDidLoad() {
     super.viewDidLoad()
-    let scrollView = UIScrollView()
-   
-    scrollView.addSubview(feedbackView)
-    feedbackView.pinWidth(UIScreen.main.bounds.size.width)
-    pin(feedbackView.left, to: scrollView.left)
-    pin(feedbackView.top, to: scrollView.top)
-//    feedbackView.pinHeight(400)
-//    feedbackView.pinHeight(to: self.view.height, priority: .fittingSizeLevel)
-    self.view.addSubview(scrollView)
-    pin(scrollView, to: self.view)
+    if false {//with scrollview
+          let scrollView = UIScrollView()
+         
+          scrollView.addSubview(feedbackView)
+          feedbackView.pinWidth(UIScreen.main.bounds.size.width)
+          pin(feedbackView.left, to: scrollView.left)
+          pin(feedbackView.top, to: scrollView.top)
+      //    feedbackView.pinHeight(400)
+      //    feedbackView.pinHeight(to: self.view.height, priority: .fittingSizeLevel)
+          self.view.addSubview(scrollView)
+          pin(scrollView, to: self.view)
+    }
+    else {
+          self.view.addSubview(feedbackView)
+          pin(feedbackView, to: self.view)
+    }
+
   }
   
   public override func viewDidAppear(_ animated: Bool) {
     super.viewDidAppear(animated)
-//    feedbackView.pinHeight(self.view.frame.size.height)
-    feedbackView.pinHeight(to: self.view.height)
+    feedbackView.pinHeight(self.view.frame.size.height)
+//    feedbackView.pinHeight(to: self.view.height)
   }
 }
 
@@ -159,23 +166,42 @@ public class FeedbackView : UIView{
     super.init(coder: coder)
     setup()
   }
+  
+  @objc func resignActive() {
+    messageTextView.resignFirstResponder()
+  }
  
   private func setup() {
     let hStack1 = UIStackView()
     let hStack2 = UIStackView()
+    print("""
+UI ID's:\n
+      self(view/FeedbackView): \(self)
+      stack: \(stack)
+      hStack1: \(hStack1)
+      hStack2: \(hStack2)
+      subjectLabel: \(subjectLabel)
+      sendButton: \(sendButton)
+      messageTextView: \(messageTextView)
+      screenshotAttachmentButton: \(screenshotAttachmentButton)
+      logAttachmentButton: \(logAttachmentButton)
+""")
+    
+    sendButton.addTarget(self, action: #selector(resignActive), for: .touchUpInside)
+    
     hStack1.addBorder(.yellow)
     hStack2.addBorder(.yellow)
     stack.addBorder(.magenta)
     subjectLabel.addBorder(.red)
     sendButton.addBorder(.green)
     messageTextView.addBorder(.blue)
-    screenshotAttachmentButton.addBorder(.purple)
-    logAttachmentButton.addBorder(.yellow)
+    screenshotAttachmentButton.addBorder(.magenta)
+    logAttachmentButton.addBorder(.red)
     
     hStack1.alignment = .fill
     hStack2.alignment = .fill
     
-    hStack1.distribution = .fillProportionally
+//    hStack1.distribution = .fillProportionally
     
     hStack1.axis = .horizontal
     hStack2.axis = .horizontal
@@ -199,24 +225,25 @@ public class FeedbackView : UIView{
     
 //    UIStackView
     
-    messageTextView.pinHeight(52, priority: UILayoutPriority(100))//set minHeight!
+//    messageTextView.pinHeight(52, priority: UILayoutPriority(100))//set minHeight!
     /***DEMO JUST FOR TEST***/
-    subjectLabel.pinHeight(52, priority: .fittingSizeLevel)//set minHeight!
+//    subjectLabel.pinHeight(52, priority: .fittingSizeLevel)//set minHeight!
     screenshotAttachmentButton .pinSize(CGSize(width: 32, height: 40))//PinHeight Later!!
     logAttachmentButton.pinSize(CGSize(width: 32, height: 40))//PinHeight Later!!
     /// Add
-//    hStack1.addArrangedSubview(subjectLabel)
-//    hStack1.addArrangedSubview(sendButton)
-//
-//    hStack2.addArrangedSubview(screenshotAttachmentButton)
-//    hStack2.addArrangedSubview(logAttachmentButton)
+    hStack1.addArrangedSubview(subjectLabel)
+    hStack1.addArrangedSubview(sendButton)
+
+    hStack2.addArrangedSubview(screenshotAttachmentButton)
+    hStack2.addArrangedSubview(UIView())//spacer
+    hStack2.addArrangedSubview(logAttachmentButton)
     
-    stack.addArrangedSubview(subjectLabel)
+    stack.addArrangedSubview(hStack1)
     stack.addArrangedSubview(messageTextView)
-    stack.addArrangedSubview(logAttachmentButton)
+    stack.addArrangedSubview(hStack2)
 
     self.addSubview(stack)
-    pin(stack, to: self, dist: 12)
+    pin(stack, toSafe: self, dist: 12)
     
     ///bla
     self.backgroundColor = .yellow
