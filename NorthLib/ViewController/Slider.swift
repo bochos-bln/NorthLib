@@ -458,14 +458,14 @@ open class VerticalSheet: Slider {
   // Keyboard distance slid up
   var kbDistance: CGFloat?
   
-  /// Move the slider up
+  //MARK: Slide Up
   public func slideUp(_ dist: CGFloat) {
     //WTF
     debug("up: \(dist)")
     guard isOpen else { return }
     UIView.animate(seconds: duration) { [weak self] in
       guard let self = self else { return }
-      self.topConstraint.constant -= dist
+      self.topConstraint.constant += dist
       self.bottomConstraint.constant -= dist
       self.active.view.layoutIfNeeded()
     }

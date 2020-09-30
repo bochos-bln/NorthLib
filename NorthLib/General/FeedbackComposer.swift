@@ -9,6 +9,33 @@
 import Foundation
 import UIKit
 
+public class FeedbackBottomSheet : BottomSheet{
+  
+  // Keyboard change notification handler, shifts sheet if necessary
+  @objc override func handleKeyboardChange(notification: Notification) {
+    guard let keyboardFrame = (notification.userInfo?[UIResponder.keyboardFrameEndUserInfoKey]
+      as? NSValue)?.cgRectValue else { return }
+    guard kbDistance == nil else { return }
+    kbDistance = keyboardFrame.size.height
+    slideUp(keyboardFrame.size.height)
+  }
+  
+  
+  public override func slideUp(_ dist: CGFloat) {
+    //MARK: Slide Up
+    
+      debug("up and away: \(dist)")
+      guard isOpen else { return }
+      UIView.animate(seconds: duration) { [weak self] in
+        guard let self = self else { return }
+//        self.topConstraint.constant += dist
+        self.bottomConstraint.constant -= (dist)
+        self.heightConstraint.constant -= (dist)
+        self.active.view.layoutIfNeeded()
+      }
+  }
+}
+
 public class FeedbackComposer : DoesLog{
   /**
   **Discussion**
@@ -53,7 +80,7 @@ public class FeedbackComposer : DoesLog{
     //ToDo may do nothing if still presented!?
     
     if feedbackBottomSheet == nil {
-      feedbackBottomSheet = BottomSheet(slider: FeedbackViewController(),
+      feedbackBottomSheet = FeedbackBottomSheet(slider: FeedbackViewController(),
                                         into: currentVc)
     }
     else {
@@ -172,6 +199,13 @@ public class FeedbackView : UIView{
   }
  
   private func setup() {
+    self.onTapping { [weak self] (_) in
+      guard let self = self else { return }
+      if self.messageTextView.isFirstResponder {
+        self.messageTextView.resignFirstResponder()
+      }
+    }
+    
     let hStack1 = UIStackView()
     let hStack2 = UIStackView()
     print("""
