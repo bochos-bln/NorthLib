@@ -73,6 +73,11 @@ extension UIView {
     let gr = TapRecognizer()
     gr.onTap(view: self, closure: closure)
   }
+  
+  public func onLongTapping(closure: @escaping (UILongPressGestureRecognizer)->()){
+    let gr = LongTapRecognizer()
+    gr.onLongTap(view: self, closure: closure)
+  }
 }
 
 // MARK: - UILabel setTextAnimated

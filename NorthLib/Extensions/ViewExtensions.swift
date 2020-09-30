@@ -283,6 +283,22 @@ open class TapRecognizer: UITapGestureRecognizer {
   }
 }
 
+/// A simple UILongPressGestureRecognizer wrapper
+open class LongTapRecognizer: UILongPressGestureRecognizer {
+  public var onTapClosure: ((UILongPressGestureRecognizer)->())?
+  @objc private func handleTap(sender: UILongPressGestureRecognizer) { onTapClosure?(sender) }
+  /// Define closure to call upon Tap
+  open func onLongTap(view: UIView, closure: @escaping (UILongPressGestureRecognizer)->()) {
+    view.isUserInteractionEnabled = true
+    view.addGestureRecognizer(self)
+    onTapClosure = closure
+  }
+  public init() {
+    super.init(target: nil, action: nil)
+    addTarget(self, action: #selector(handleTap))
+  }
+}
+
 /// An view with a tap gesture recognizer attached
 public protocol Touchable where Self: UIView {
   var tapRecognizer: TapRecognizer { get }
