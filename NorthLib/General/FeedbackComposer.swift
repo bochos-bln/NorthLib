@@ -20,15 +20,10 @@ public class FeedbackBottomSheet : BottomSheet{
     slideUp(keyboardFrame.size.height)
   }
   
-  
   public override func slideUp(_ dist: CGFloat) {
-    //MARK: Slide Up
-    
-      debug("up and away: \(dist)")
       guard isOpen else { return }
       UIView.animate(seconds: duration) { [weak self] in
         guard let self = self else { return }
-//        self.topConstraint.constant += dist
         self.bottomConstraint.constant -= (dist)
         self.heightConstraint.constant -= (dist)
         self.active.view.layoutIfNeeded()
@@ -36,36 +31,20 @@ public class FeedbackBottomSheet : BottomSheet{
   }
 }
 
-public class FeedbackComposer : DoesLog{
-  /**
-  **Discussion**
-   - place: in taz.neo not north Lib because of:
-        - colors
-        - fonts, font sizes
-  
-  
-  */
-  
+open class FeedbackComposer : DoesLog{
   static let shared = FeedbackComposer()
-  
-  
-  public static func send(subject:String,
-                          bodyText: String,
-                          screenshot:UIImage?=nil,
-                          logData:Data?=nil,
-                          finishClosure:@escaping ((Bool)->())
-  ){
-    FeedbackComposer.shared.send(subject: subject,
-                            bodyText: bodyText,
-                            screenshot: screenshot,
-                            logData: logData,
-                            finishClosure: finishClosure)
-  }
-  
+  public init() {}
   ///Remember Bottom Sheet due its strong reference to active (VC) it wount be de-inited
   var feedbackBottomSheet : BottomSheet?
   
-  func send(subject:String,
+  
+  let _feedbackViewController = FeedbackViewController()
+  open var feedbackViewController : FeedbackViewController {
+    get { return _feedbackViewController }
+  }
+  
+  
+  public func send(subject:String,
             bodyText: String,
             screenshot:UIImage?=nil,
             logData:Data?=nil,
@@ -78,9 +57,8 @@ public class FeedbackComposer : DoesLog{
     }
     
     //ToDo may do nothing if still presented!?
-    
     if feedbackBottomSheet == nil {
-      feedbackBottomSheet = FeedbackBottomSheet(slider: FeedbackViewController(),
+      feedbackBottomSheet = FeedbackBottomSheet(slider: feedbackViewController,
                                         into: currentVc)
     }
     else {
@@ -90,6 +68,7 @@ public class FeedbackComposer : DoesLog{
     if let feedbackCtrl = feedbackBottomSheet?.slider as? FeedbackViewController {
       feedbackCtrl.feedbackView.subjectLabel.text = subject
       feedbackCtrl.feedbackView.messageTextView.text = bodyText
+      feedbackCtrl.feedbackView.screenshotAttachmentButton.image = screenshot
     }
     
     guard let feedbackBottomSheet = feedbackBottomSheet else { return }
@@ -98,24 +77,7 @@ public class FeedbackComposer : DoesLog{
       finishClosure(true)
       self.feedbackBottomSheet = nil
     }
-//    let height = currentVc.view.bounds.size.height
-//      - currentVc.view.safeAreaInsets.top
-//      - currentVc.view.safeAreaInsets.bottom
-//      - 10
-//    print("sh: \(screenHeight)  ctrlH: \(cvcHeight)")//SE both: 667 - StatusBar
-    //Tabbar: 44 StatusBar 20 VC 667 - 647 CTRL.V.H => 20 on SE Safe Areas: UIEdgeInsets(top: 20.0, left: 0.0, bottom: 0.0, right: 0.0)
-    //XSMax 896 Tabbar inkl SafeArea: 78 Tabbar 44 // StatusBar inkl SafeArea : 44  Safe Areas: UIEdgeInsets(top: 44.0, left: 0.0, bottom: 34.0, right: 0.0)
-    // RequestedHeight: DH - SAtop - sh Bottom -x=10
-//    print("Safe Areas: \(currentVc.view.safeAreaInsets)")
     self.feedbackBottomSheet?.coverageRatio = 1.0
-    
-    
-//    if UIApplication.shared.delegate?.window??.safeAreaInsets.bottom ?? 0 > 0 {
-//      self.feedbackBottomSheet?.coverage = 335
-//    }
-//    else {
-//      self.feedbackBottomSheet?.coverage = 300
-//    }
     self.feedbackBottomSheet?.open()
     
 //    delay(seconds: 10) {
@@ -125,64 +87,27 @@ public class FeedbackComposer : DoesLog{
   }
 }
 
-/**
- 
- QQQ: FeedbackViewController viewDidLoad Ctrl: <NorthLib.FeedbackViewController: 0x7fca8df28180
- > View: Optional(<UIView: 0x7fca8df192e0;
- 
- QQQ: Composer: NorthLib.FeedbackComposer BottomSheet: Optional(<die_tageszeitung.IssueVC: 0x7fca8e052c00>) Ctrl:Optional(<UIView: 0x7fca8df289b0; frame = (0 20; 375 215); clipsToBounds = YES; layer = <CALayer: 0x600002041de0>>) View:
- QQQ: FeedbackViewController viewDidLoad Ctrl: <NorthLib.FeedbackViewController: 0x7fca8df8dc10> View: Optional(<UIView: 0x7fca8df8f070; frame = (0 0; 375 812); autoresize = W+H; layer = <CALayer: 0x6000020b8620>>)
- QQQ: Composer: NorthLib.FeedbackComposer BottomSheet: Optional(<die_tageszeitung.SectionVC: 0x7fca95014200>) Ctrl:Optional(<UIView: 0x7fca8df8e0d0; frame = (0 20; 375 215); clipsToBounds = YES; layer = <CALayer: 0x6000020b8c60>>) View:
- QQQ: FeedbackViewController viewDidLoad Ctrl: <NorthLib.FeedbackViewController: 0x7fca8dd1ab40> View: Optional(<UIView: 0x7fca8dd48fb0; frame = (0 0; 375 812); autoresize = W+H; layer = <CALayer: 0x60000208d600>>)
- QQQ: Composer: NorthLib.FeedbackComposer BottomSheet: Optional(<die_tageszeitung.ArticleVC: 0x7fca9684b800>) Ctrl:Optional(<UIView: 0x7fca8dd37c70; frame = (0 20; 375 215); clipsToBounds = YES; layer = <CALayer: 0x60000208d5c0>>) View:
- 
- */
-
-
-public class FeedbackViewController : UIViewController{
+open class FeedbackViewController : UIViewController{
+  public let feedbackView = FeedbackView()
   
-   let feedbackView = FeedbackView()
-  
-  public override func viewDidLoad() {
+  open override func viewDidLoad() {
     super.viewDidLoad()
-    if false {//with scrollview
-          let scrollView = UIScrollView()
-         
-          scrollView.addSubview(feedbackView)
-          feedbackView.pinWidth(UIScreen.main.bounds.size.width)
-          pin(feedbackView.left, to: scrollView.left)
-          pin(feedbackView.top, to: scrollView.top)
-      //    feedbackView.pinHeight(400)
-      //    feedbackView.pinHeight(to: self.view.height, priority: .fittingSizeLevel)
-          self.view.addSubview(scrollView)
-          pin(scrollView, to: self.view)
-    }
-    else {
-          self.view.addSubview(feedbackView)
-          pin(feedbackView, to: self.view)
-    }
-
-  }
-  
-  public override func viewDidAppear(_ animated: Bool) {
-    super.viewDidAppear(animated)
-    feedbackView.pinHeight(self.view.frame.size.height)
-//    feedbackView.pinHeight(to: self.view.height)
+    self.view.addSubview(feedbackView)
+    pin(feedbackView, to:self.view)
   }
 }
 
-public class FeedbackView : UIView{
-   static var defaultFontSize = CGFloat(16)
-   static var subjectFontSize = CGFloat(32)
+public class FeedbackView : UIView {
+  static var defaultFontSize = CGFloat(16)
+  static var subjectFontSize = CGFloat(32)
   
   let stack = UIStackView()
   
-  let subjectLabel = UILabel()
-  let sendButton = UIButton()
-  let messageTextView = UITextView()
-  let screenshotAttachmentButton = ImageView()
-  let logAttachmentButton = ImageView()
-  
+  public let subjectLabel = UILabel()
+  public let sendButton = UIButton()
+  public let messageTextView = UITextView()
+  public let screenshotAttachmentButton = ScaledHeightImageView(frame: CGRect(origin: .zero, size: CGSize(width: 10, height: 60)))
+  public let logAttachmentButton = ScaledHeightImageView(frame: CGRect(origin: .zero, size: CGSize(width: 10, height: 60)))
   
   public override init(frame: CGRect) {
     super.init(frame: frame)
@@ -207,70 +132,64 @@ public class FeedbackView : UIView{
     }
     
     let hStack1 = UIStackView()
-    let hStack2 = UIStackView()
-    print("""
-UI ID's:\n
-      self(view/FeedbackView): \(self)
-      stack: \(stack)
-      hStack1: \(hStack1)
-      hStack2: \(hStack2)
-      subjectLabel: \(subjectLabel)
-      sendButton: \(sendButton)
-      messageTextView: \(messageTextView)
-      screenshotAttachmentButton: \(screenshotAttachmentButton)
-      logAttachmentButton: \(logAttachmentButton)
-""")
-    
+    let hStack2 = UIView()
     sendButton.addTarget(self, action: #selector(resignActive), for: .touchUpInside)
     
-    hStack1.addBorder(.yellow)
-    hStack2.addBorder(.yellow)
-    stack.addBorder(.magenta)
-    subjectLabel.addBorder(.red)
-    sendButton.addBorder(.green)
-    messageTextView.addBorder(.blue)
-    screenshotAttachmentButton.addBorder(.magenta)
-    logAttachmentButton.addBorder(.red)
-    
     hStack1.alignment = .fill
-    hStack2.alignment = .fill
-    
-//    hStack1.distribution = .fillProportionally
+//    hStack2.alignment = .fill
+//
+//    hStack2.distribution = .fillProportionally
     
     hStack1.axis = .horizontal
-    hStack2.axis = .horizontal
+//    hStack2.axis = .horizontal
     stack.axis = .vertical
-    
     /// Style
-    sendButton.setBackgroundColor(color: .blue, forState: .normal)
-    sendButton.setBackgroundColor(color: .lightGray, forState: .disabled)
     sendButton.isEnabled = true
     sendButton.layer.cornerRadius = 21
-//    sendButton.pinWidth(42, priority: .required)
-//    sendButton.pinHeight(42)
-    sendButton.pinSize(CGSize(width: 42, height: 42))
     sendButton.setImage(UIImage(name: "arrow.up"), for: .normal)
     sendButton.imageView?.tintColor = .white
     subjectLabel.numberOfLines = 0
     subjectLabel.font = UIFont.boldSystemFont(ofSize: Self.subjectFontSize)
-//    messageTextView.numberOfLines = 0
-//    messageTextView.isEnabled = true
-    /***DEMO JUST FOR TEST***/
+    logAttachmentButton.image = UIImage(name: "doc.text")
+
     
-//    UIStackView
+    screenshotAttachmentButton.contentMode = .scaleAspectFit
     
-//    messageTextView.pinHeight(52, priority: UILayoutPriority(100))//set minHeight!
-    /***DEMO JUST FOR TEST***/
-//    subjectLabel.pinHeight(52, priority: .fittingSizeLevel)//set minHeight!
-    screenshotAttachmentButton .pinSize(CGSize(width: 32, height: 40))//PinHeight Later!!
-    logAttachmentButton.pinSize(CGSize(width: 32, height: 40))//PinHeight Later!!
+    logAttachmentButton.contentMode = .scaleAspectFit
+    
+    screenshotAttachmentButton.addBorder(.red)
+    logAttachmentButton.addBorder(.blue)
+    hStack2.addBorder(.green)
+    
     /// Add
     hStack1.addArrangedSubview(subjectLabel)
     hStack1.addArrangedSubview(sendButton)
+    
+    hStack2.addSubview(screenshotAttachmentButton)
+//    let spacer = UIView()
+    logAttachmentButton.contentMode = .scaleAspectFit
+    screenshotAttachmentButton.contentMode = .scaleAspectFit
+//    spacer.setContentHuggingPriority(.fittingSizeLevel, for: .horizontal)
+//    screenshotAttachmentButton.setContentHuggingPriority(.defaultLow, for: .horizontal)
+//    logAttachmentButton.setContentHuggingPriority(.defaultLow, for: .horizontal)
+//    spacer.setContentHuggingPriority(.required, for: .vertical)
+//    spacer.setContentCompressionResistancePriority(.fittingSizeLevel, for: .horizontal)
+//    spacer.setContentHuggingPriority(.required, for: .vertical)
+    hStack2.addSubview(logAttachmentButton)
+    
+    //Set Constraints after added to Stack View otherwise Contraint Errosrs are displayed
+    sendButton.pinSize(CGSize(width: 42, height: 42))
 
-    hStack2.addArrangedSubview(screenshotAttachmentButton)
-    hStack2.addArrangedSubview(UIView())//spacer
-    hStack2.addArrangedSubview(logAttachmentButton)
+    screenshotAttachmentButton.pinHeight(70)
+    logAttachmentButton.pinHeight(70)
+//    screenshotAttachmentButton.intrinsicContentSize
+//    screenshotAttachmentButton.pinWidth(20, priority: UILayoutPriority(1))
+//    logAttachmentButton.pinWidth(20, priority: UILayoutPriority(1))
+    
+    pin(screenshotAttachmentButton, to: hStack2, exclude: .right)
+    pin(logAttachmentButton, to: hStack2, exclude: .left)
+    
+
     
     stack.addArrangedSubview(hStack1)
     stack.addArrangedSubview(messageTextView)
@@ -278,12 +197,24 @@ UI ID's:\n
 
     self.addSubview(stack)
     pin(stack, toSafe: self, dist: 12)
-    
-    ///bla
-    self.backgroundColor = .yellow
-    
-    screenshotAttachmentButton.backgroundColor = .green
-    logAttachmentButton.backgroundColor = .blue
-    
   }
+}
+
+
+public class ScaledHeightImageView: UIImageView {
+
+  public override var intrinsicContentSize: CGSize {
+
+        if let myImage = self.image {
+            let myImageWidth = myImage.size.width
+            let myImageHeight = myImage.size.height
+            let myViewWidth = self.frame.size.width
+
+            let ratio = myViewWidth/myImageWidth
+            let scaledHeight = myImageHeight * ratio
+
+            return CGSize(width: myViewWidth, height: scaledHeight)
+        }
+        return CGSize(width: -1.0, height: -1.0)
+    }
 }

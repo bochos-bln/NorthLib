@@ -163,8 +163,8 @@ public extension UIView {
   
   /// Pin size (width + height)
   @discardableResult
-  func pinSize(_ size: CGSize) -> (width: NSLayoutConstraint, height: NSLayoutConstraint) { 
-    return (pinWidth(size.width), pinHeight(size.height))
+  func pinSize(_ size: CGSize, priority: UILayoutPriority? = nil) -> (width: NSLayoutConstraint, height: NSLayoutConstraint) {
+    return (pinWidth(size.width, priority: priority), pinHeight(size.height, priority: priority))
   }
   
   /// Pin aspect ratio (width/height)

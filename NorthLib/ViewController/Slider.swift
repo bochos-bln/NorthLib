@@ -235,7 +235,7 @@ open class Slider: NSObject, DoesLog {
       pin(contentView.right, to: sliderView.right)
       sliderView.layer.cornerRadius = decorationHeight/2
       if fromBottom {
-        pin(contentView.bottom, to: sliderView.bottom)
+        pin(contentView.bottom, to: sliderView.bottom, priority: .fittingSizeLevel)
         pin(contentView.top, to: sliderView.top, dist: decorationHeight)
         // Mask top right and left corners
         sliderView.layer.maskedCorners = [.layerMaxXMinYCorner, .layerMinXMinYCorner]
