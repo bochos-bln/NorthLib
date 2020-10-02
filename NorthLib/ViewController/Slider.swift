@@ -79,7 +79,7 @@ open class Slider: NSObject, DoesLog {
   }
   
   var shadeView = UIView()
-  var sliderView = UIView()
+  public private(set) var sliderView = UIView()
   var contentView = UIView()
   var handleView: RoundedRect?
   
@@ -529,6 +529,38 @@ open class VerticalSheet: Slider {
 open class BottomSheet: VerticalSheet {
   public init(slider: UIViewController, into active: UIViewController) {
     super.init(slider: slider, into: active, fromBottom: true)
+  }
+}
+
+public class FeedbackBottomSheet : BottomSheet{
+  
+  public var activeVC:UIViewController {
+    get { return active }
+    set { active = newValue }
+  }
+  
+  public var sliderVC:UIViewController {
+    get { return slider }
+    set { slider = newValue }
+  }
+  
+  // Keyboard change notification handler, shifts sheet if necessary
+  @objc override func handleKeyboardChange(notification: Notification) {
+    guard let keyboardFrame = (notification.userInfo?[UIResponder.keyboardFrameEndUserInfoKey]
+      as? NSValue)?.cgRectValue else { return }
+    guard kbDistance == nil else { return }
+    kbDistance = keyboardFrame.size.height
+    slideUp(keyboardFrame.size.height)
+  }
+  
+  public override func slideUp(_ dist: CGFloat) {
+    guard isOpen else { return }
+    UIView.animate(seconds: duration) { [weak self] in
+      guard let self = self else { return }
+      self.bottomConstraint.constant -= (dist)
+      self.heightConstraint.constant -= (dist)
+      self.active.view.layoutIfNeeded()
+    }
   }
 }
 
