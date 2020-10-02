@@ -50,7 +50,6 @@ open class FeedbackComposer : DoesLog{
             logData:Data?=nil,
             finishClosure:@escaping ((Bool)->())
   ){
-      
     guard let currentVc = UIViewController.top() else {
       log("Error, no Controller to Present")
       return;
@@ -66,9 +65,14 @@ open class FeedbackComposer : DoesLog{
     }
     
     if let feedbackCtrl = feedbackBottomSheet?.slider as? FeedbackViewController {
-      feedbackCtrl.feedbackView.subjectLabel.text = subject
       feedbackCtrl.feedbackView.messageTextView.text = bodyText
-      feedbackCtrl.feedbackView.screenshotAttachmentButton.image = screenshot
+      feedbackCtrl.screenshot = screenshot
+      if let data = logData {
+         feedbackCtrl.logString = String(data:data , encoding: .utf8)
+      }
+      
+      feedbackCtrl.subject = subject
+      feedbackCtrl.feedbackView.sendButton.addTarget(self, action: #selector(handleSend), for: .touchUpInside)
     }
     
     guard let feedbackBottomSheet = feedbackBottomSheet else { return }
@@ -79,22 +83,127 @@ open class FeedbackComposer : DoesLog{
     }
     self.feedbackBottomSheet?.coverageRatio = 1.0
     self.feedbackBottomSheet?.open()
-    
-//    delay(seconds: 10) {
-//      self.feedbackBottomSheet?.close()
-//    }
+  }
   
+  @objc open func handleSend(){
+    if let feedbackCtrl = feedbackBottomSheet?.slider as? FeedbackViewController {
+      feedbackCtrl.handleSend()
+    }
   }
 }
 
 open class FeedbackViewController : UIViewController{
+  
+  public var subject : String? {
+    didSet {
+         feedbackView.subjectLabel.text = subject
+       }
+  }
+  public var logString: String? = "-"
+  public var screenshot: UIImage? {
+    didSet {
+      feedbackView.screenshotAttachmentButton.image = screenshot
+    }
+  }
+  
+  @objc open func handleSend(){
+    print("not implemented here")
+    //API Requests and more needs to be overwritten in inherited Classes
+  }
+  
   public let feedbackView = FeedbackView()
+
+  //TODO: Optimize, take care of Memory Leaks
+  func showScreenshot(){
+    print("Open detail View")
+    let oi = OptionalImageItem()
+    oi.image = self.feedbackView.screenshotAttachmentButton.image
+    let ziv = ZoomedImageView(optionalImage:oi)
+    let vc = UIViewController()
+    vc.view.addSubview(ziv)
+    pin(ziv, to: vc.view)
+    let overlay = Overlay(overlay: vc, into: self)
+    
+    vc.view.frame = self.view.frame
+    vc.view.setNeedsLayout()
+    vc.view.layoutIfNeeded()
+    overlay.overlaySize = self.view.frame.size
+    let openToRect = self.view.frame
+    
+    ziv.addBorder(.green)
+    
+    let child = self.feedbackView.screenshotAttachmentButton
+    let fromFrame = child.convert(child.frame, to: self.view)
+    
+    overlay.openAnimated(fromFrame: fromFrame,
+                         toFrame: openToRect)
+  }
+  
+  //TODO: Optimize, take care of Memory Leaks
+  func showLog(){
+    let logVc = UIViewController()
+    let logView = SimpleLogView()
+    logView.append(txt: logString ?? "")
+    logVc.view.addSubview(logView)
+    pin(logView, to: logVc.view)
+    self.present(logVc, animated: true) {
+      print("done!!")
+    }
+  }
   
   open override func viewDidLoad() {
     super.viewDidLoad()
     self.view.addSubview(feedbackView)
     pin(feedbackView, to:self.view)
+    
+    feedbackView.screenshotAttachmentButton.onTapping { [weak self] (_) in
+      self?.showScreenshot()
+    }
+    
+    feedbackView.logAttachmentButton.onTapping {  [weak self] (_) in
+      self?.showLog()
+    }
+    /// Setup Attatchment Menus
+   _ = logAttatchmentMenu
+   _ = screenshotAttatchmentMenu
   }
+  
+  lazy var logAttatchmentMenu : ContextMenu = {
+    let menu = ContextMenu(view: self.feedbackView.logAttachmentButton)
+    menu.addMenuItem(title: "View", icon: "eye") {[weak self]  (_) in
+      self?.showLog()
+    }
+    menu.addMenuItem(title: "Löschen", icon: "trash.circle") { (_) in
+      self.feedbackView.logAttachmentButton.removeFromSuperview()
+    }
+    menu.addMenuItem(title: "Abbrechen", icon: "multiply.circle") { (_) in }
+    return menu
+  }()
+  
+  lazy var screenshotAttatchmentMenu : ContextMenu = {
+    let menu = ContextMenu(view: self.feedbackView.screenshotAttachmentButton)
+    menu.addMenuItem(title: "View", icon: "eye") { [weak self]  (_) in
+      self?.showScreenshot()
+    }
+    menu.addMenuItem(title: "Löschen", icon: "trash.circle") { (_) in
+      self.feedbackView.screenshotAttachmentButton.removeFromSuperview()
+      //self.screenshot = nil
+    }
+    menu.addMenuItem(title: "Abbrechen", icon: "multiply.circle") { (_) in }
+    return menu
+  }()
+  
+  /// Define the menu to display on long touch of a MomentView
+  public var attatchmentMenu: [(title: String, icon: String, closure: (String)->())] = []
+  
+  /// Add an additional menu item
+  public func addMenuItem(title: String, icon: String, closure: @escaping (String)->()) {
+    attatchmentMenu += (title: title, icon: icon, closure: closure)
+  }
+  
+  public var mainmenu1 : ContextMenu?
+  public var mainmenu2 : ContextMenu?
+  
 }
 
 public class FeedbackView : UIView {
@@ -106,8 +215,8 @@ public class FeedbackView : UIView {
   public let subjectLabel = UILabel()
   public let sendButton = UIButton()
   public let messageTextView = UITextView()
-  public let screenshotAttachmentButton = ScaledHeightImageView(frame: CGRect(origin: .zero, size: CGSize(width: 10, height: 60)))
-  public let logAttachmentButton = ScaledHeightImageView(frame: CGRect(origin: .zero, size: CGSize(width: 10, height: 60)))
+  public let screenshotAttachmentButton = XImageView()// ScaledHeightImageView(frame: CGRect(origin: .zero, size: CGSize(width: 10, height: 60)))
+  public let logAttachmentButton = XImageView()//ScaledHeightImageView(frame: CGRect(origin: .zero, size: CGSize(width: 10, height: 60)))
   
   public override init(frame: CGRect) {
     super.init(frame: frame)
@@ -133,48 +242,30 @@ public class FeedbackView : UIView {
     
     let hStack1 = UIStackView()
     let hStack2 = UIView()
-    sendButton.addTarget(self, action: #selector(resignActive), for: .touchUpInside)
     
     hStack1.alignment = .fill
-//    hStack2.alignment = .fill
-//
-//    hStack2.distribution = .fillProportionally
-    
     hStack1.axis = .horizontal
-//    hStack2.axis = .horizontal
     stack.axis = .vertical
     /// Style
     sendButton.isEnabled = true
+    sendButton.addBorder(.red)
     sendButton.layer.cornerRadius = 21
     sendButton.setImage(UIImage(name: "arrow.up"), for: .normal)
     sendButton.imageView?.tintColor = .white
     subjectLabel.numberOfLines = 0
     subjectLabel.font = UIFont.boldSystemFont(ofSize: Self.subjectFontSize)
     logAttachmentButton.image = UIImage(name: "doc.text")
-
     
     screenshotAttachmentButton.contentMode = .scaleAspectFit
-    
     logAttachmentButton.contentMode = .scaleAspectFit
-    
-    screenshotAttachmentButton.addBorder(.red)
-    logAttachmentButton.addBorder(.blue)
-    hStack2.addBorder(.green)
     
     /// Add
     hStack1.addArrangedSubview(subjectLabel)
     hStack1.addArrangedSubview(sendButton)
     
     hStack2.addSubview(screenshotAttachmentButton)
-//    let spacer = UIView()
-    logAttachmentButton.contentMode = .scaleAspectFit
+    logAttachmentButton.contentMode = .center
     screenshotAttachmentButton.contentMode = .scaleAspectFit
-//    spacer.setContentHuggingPriority(.fittingSizeLevel, for: .horizontal)
-//    screenshotAttachmentButton.setContentHuggingPriority(.defaultLow, for: .horizontal)
-//    logAttachmentButton.setContentHuggingPriority(.defaultLow, for: .horizontal)
-//    spacer.setContentHuggingPriority(.required, for: .vertical)
-//    spacer.setContentCompressionResistancePriority(.fittingSizeLevel, for: .horizontal)
-//    spacer.setContentHuggingPriority(.required, for: .vertical)
     hStack2.addSubview(logAttachmentButton)
     
     //Set Constraints after added to Stack View otherwise Contraint Errosrs are displayed
@@ -182,14 +273,9 @@ public class FeedbackView : UIView {
 
     screenshotAttachmentButton.pinHeight(70)
     logAttachmentButton.pinHeight(70)
-//    screenshotAttachmentButton.intrinsicContentSize
-//    screenshotAttachmentButton.pinWidth(20, priority: UILayoutPriority(1))
-//    logAttachmentButton.pinWidth(20, priority: UILayoutPriority(1))
     
     pin(screenshotAttachmentButton, to: hStack2, exclude: .right)
     pin(logAttachmentButton, to: hStack2, exclude: .left)
-    
-
     
     stack.addArrangedSubview(hStack1)
     stack.addArrangedSubview(messageTextView)
@@ -200,21 +286,33 @@ public class FeedbackView : UIView {
   }
 }
 
-
-public class ScaledHeightImageView: UIImageView {
-
-  public override var intrinsicContentSize: CGSize {
-
-        if let myImage = self.image {
-            let myImageWidth = myImage.size.width
-            let myImageHeight = myImage.size.height
-            let myViewWidth = self.frame.size.width
-
-            let ratio = myViewWidth/myImageWidth
-            let scaledHeight = myImageHeight * ratio
-
-            return CGSize(width: myViewWidth, height: scaledHeight)
+extension UIImageView {
+    func addAspectRatioConstraint(image: UIImage?) {
+        if let image = image {
+            removeAspectRatioConstraint()
+            let aspectRatio = image.size.width / image.size.height
+            let constraint = NSLayoutConstraint(item: self, attribute: .width,
+                                                relatedBy: .equal,
+                                                toItem: self, attribute: .height,
+                                                multiplier: aspectRatio, constant: 0.0)
+            addConstraint(constraint)
         }
-        return CGSize(width: -1.0, height: -1.0)
     }
+    
+    func removeAspectRatioConstraint() {
+        for constraint in self.constraints {
+            if (constraint.firstItem as? UIImageView) == self,
+               (constraint.secondItem as? UIImageView) == self {
+                removeConstraint(constraint)
+            }
+        }
+    }
+}
+
+public class XImageView: UIImageView {
+  override public var image: UIImage?{
+    didSet{
+      addAspectRatioConstraint(image: image)
+    }
+  }
 }

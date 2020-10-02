@@ -65,7 +65,7 @@ open class Alert {
       let cancelButton = UIAlertAction(title: "Abbrechen", style: .cancel)
       for a in actions { alert.addAction(a) }
       alert.addAction(cancelButton)
-      UIWindow.rootVC?.present(alert, animated: true, completion: nil)    
+      UIViewController.top()?.present(alert, animated: true, completion: nil)    
     }
   }
 

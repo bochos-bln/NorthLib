@@ -34,7 +34,7 @@ open class ContextMenu: NSObject, UIContextMenuInteractionDelegate {
         view.isUserInteractionEnabled = true   
         if #available(iOS 13.0, *) {
           let menuInteraction = UIContextMenuInteraction(delegate: self)
-          view.addInteraction(menuInteraction)      
+          view.addInteraction(menuInteraction)
         }
         else {
           let longTouch = UILongPressGestureRecognizer(target: self, 
