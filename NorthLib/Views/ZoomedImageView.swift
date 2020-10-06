@@ -102,11 +102,18 @@ open class ZoomedImageView: UIView, ZoomedImageViewSpec {
     print("deinit ZoomedImageView")
   }
   
+  open override func willMove(toSuperview newSuperview: UIView?) {
+    if newSuperview == nil {
+      orientationClosure = nil
+      optionalImage = nil
+    }
+  }
+  
   private var onHighResImgNeededClosure: ((OptionalImage,
   @escaping (Bool) -> ()) -> ())?
   private var onHighResImgNeededZoomFactor: CGFloat = 1.1
   private var highResImgRequested = false
-  private var orientationClosure = OrientationClosure()
+  private var orientationClosure:OrientationClosure? = OrientationClosure()
   private var singleTapRecognizer : UITapGestureRecognizer?
   private let doubleTapRecognizer = UITapGestureRecognizer()
   private var zoomEnabled :Bool = true {
@@ -140,7 +147,7 @@ open class ZoomedImageView: UIView, ZoomedImageViewSpec {
   public private(set) var xButton: Button<CircledXView> = Button<CircledXView>()
   public private(set) var spinner: UIActivityIndicatorView = UIActivityIndicatorView()
   public private(set) lazy var menu = ContextMenu(view: imageView, smoothPreviewForImage: true)
-  public var optionalImage: OptionalImage{
+  public var optionalImage: OptionalImage?{
     willSet {
       if let itm = optionalImage as? OptionalImageItem {
         itm.onUpdatingClosureClosure = nil
@@ -199,7 +206,7 @@ extension ZoomedImageView{
     setupSpinner()
     setupDoubleTapGestureRecognizer()
     updateImage()
-    orientationClosure.onOrientationChange(closure: {
+    orientationClosure?.onOrientationChange(closure: {
       let sv = self.scrollView //local name for shorten usage
       let wasMinZoom = sv.zoomScale == sv.minimumZoomScale
       self.updateMinimumZoomScale()
@@ -211,7 +218,7 @@ extension ZoomedImageView{
   
   // MARK: updateImage
   func updateImage() {
-    if optionalImage.isAvailable, let detailImage = optionalImage.image {
+    if let oi = optionalImage, oi.isAvailable, let detailImage = oi.image {
       setImage(detailImage)
       zoomEnabled = true
       spinner.stopAnimating()
@@ -219,7 +226,7 @@ extension ZoomedImageView{
     }
     else {
       //show waitingImage if detailImage is not available yet
-      if let img = optionalImage.waitingImage {
+      if let img = optionalImage?.waitingImage {
         setImage(img)
         self.scrollView.zoomScale = 1
         zoomEnabled = false
@@ -228,15 +235,15 @@ extension ZoomedImageView{
         imageView.image = nil
       }
       spinner.startAnimating()
-      optionalImage.whenAvailable {
-        if let img = self.optionalImage.image {
+      optionalImage?.whenAvailable {
+        if let img = self.optionalImage?.image {
           self.setImage(img)
           self.layoutIfNeeded()
           self.zoomEnabled = true
           self.spinner.stopAnimating()
           //due all previewImages are not allowed to zoom,
           //exchanged image should be shown fully
-          self.optionalImage.whenAvailable(closure: nil)
+          self.optionalImage?.whenAvailable(closure: nil)
           //Center
           self.zoomOutAndCenter()
         }
@@ -304,7 +311,8 @@ extension ZoomedImageView{
     let loc = sender.location(in: imageView)
     let size = imageView.frame.size
     guard let closure = onTapClosure else { return }
-    closure(self.optionalImage,
+    guard let oi = self.optionalImage else { return }
+    closure(oi,
             Double(loc.x / (size.width / scrollView.zoomScale )),
             Double(loc.y / (size.height / scrollView.zoomScale )))
   }
@@ -407,7 +415,7 @@ extension ZoomedImageView: UIScrollViewDelegate{
       self.highResImgRequested == false,
       (optionalImage as? ZoomedPdfImageSpec)?.canRequestHighResImg ?? true,
       let closure = onHighResImgNeededClosure {
-      let _optionalImage = optionalImage
+      guard let _optionalImage = optionalImage else { return }
       self.highResImgRequested = true
       closure(_optionalImage, { success in
         if success, let img = _optionalImage.image {

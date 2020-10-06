@@ -32,7 +32,7 @@ public protocol ZoomedImageViewSpec where Self: UIView {
   /// The Imageview displaying either the main or the waiting image
   var imageView: UIImageView { get }
   /// The image to display
-  var optionalImage: OptionalImage { get set }
+  var optionalImage: OptionalImage? { get set }
   /// The X-Button (may be used to close the ZoomedImageView)
   var xButton: Button<CircledXView> { get }
   // Spinner indicating activity if !OptionalImage.isAvailable
