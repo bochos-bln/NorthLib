@@ -365,6 +365,7 @@ public class Overlay: NSObject, OverlaySpec, UIGestureRecognizerDelegate {
     overlayVC.removeFromParent()
     closing = false
     self.onCloseHandler?()
+    self.closeAction = nil
   }
   
   // MARK: close
