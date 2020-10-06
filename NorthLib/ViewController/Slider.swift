@@ -534,6 +534,19 @@ open class BottomSheet: VerticalSheet {
 
 public class FeedbackBottomSheet : BottomSheet{
   
+  public var onUserSlideToClose : (()->())?
+  
+  /// close the slider (slide out)
+  public override func close(animated: Bool = true, closure: ((Slider)->())? = nil) {
+    tmpCloseClosure = closure
+    if let closure = onUserSlideToClose {
+      closure()
+    }
+    else {
+      slide(toOpen: false, animated: animated)
+    }
+  }
+  
   public var sendSuccees = false
   
   public var activeVC:UIViewController {
