@@ -534,6 +534,8 @@ open class BottomSheet: VerticalSheet {
 
 public class FeedbackBottomSheet : BottomSheet{
   
+  public var sendSuccees = false
+  
   public var activeVC:UIViewController {
     get { return active }
     set { active = newValue }

@@ -61,6 +61,11 @@ extension ZoomedPdfImageSpec{
 // MARK: - OptionalImageItem : OptionalImage
 /// Reference Implementation
 open class OptionalImageItem: OptionalImage{
+  
+  deinit {
+    print("deinit OptionalImageItem")
+  }
+  
   private var availableClosure: (()->())?
   fileprivate var onUpdatingClosureClosure: (()->())? = nil
   fileprivate var zoomFactorForRequestingHigherResImage : CGFloat = 1.1
@@ -92,6 +97,10 @@ open class ZoomedImageView: UIView, ZoomedImageViewSpec {
   var imageViewTopConstraint: NSLayoutConstraint?
   var imageViewTrailingConstraint: NSLayoutConstraint?
   var layoutInitialized = false
+  
+  deinit {
+    print("deinit ZoomedImageView")
+  }
   
   private var onHighResImgNeededClosure: ((OptionalImage,
   @escaping (Bool) -> ()) -> ())?

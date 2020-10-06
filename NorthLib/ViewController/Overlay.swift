@@ -47,6 +47,10 @@ public class Overlay: NSObject, OverlaySpec, UIGestureRecognizerDelegate {
   private var closeAction : (() -> ())?
   private var onCloseHandler: (() -> ())?
   
+  deinit {
+    print("deinit Overlay")
+  }
+  
   var shadeView: UIView?
   var overlayVC: UIViewController
   var activeVC: UIViewController
