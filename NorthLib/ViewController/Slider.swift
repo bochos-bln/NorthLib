@@ -164,7 +164,7 @@ open class Slider: NSObject, DoesLog {
   
   func resetVerticalConstraints() {
     heightConstraint.isActive = true
-    heightConstraint.constant = coverage
+    heightConstraint.constant = coverage - UIWindow.topInset
     if isOpen {
       topConstraint.constant = 0
       bottomConstraint.constant = 0
