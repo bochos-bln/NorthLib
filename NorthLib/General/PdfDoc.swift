@@ -26,7 +26,7 @@ open class PdfPage {
   ///   clipped to this rectangle"
   public var frame: CGRect { page.getBoxRect(.cropBox) }
   
-  public func image(scale: CGFloat = 1.0) -> UIImage? {
+  public func image(scale: CGFloat = 1.0, check: (()->(Bool))?) -> UIImage? {
     //Autoreleasepool helps to read debug out, remove it later for tests
     return autoreleasepool { () -> UIImage? in
        
@@ -39,20 +39,34 @@ open class PdfPage {
          frame.origin.y = 0
        
          print(">>>> UIGraphicsBeginImageContext WITH SIZE: \(   frame.size)")
+      autoreleasepool {
+         
       
          UIGraphicsBeginImageContext(frame.size)
+        print("lets check!")
+        if let chk = check {
+          if chk() == true {
+            print("prevent mem crash")
+            return
+          }
+        }
          if let ctx = UIGraphicsGetCurrentContext() {
+          print("ctx 1")
            ctx.saveGState()
            UIColor.white.set()
+          print("ctx 2")
            ctx.fill(frame)
            ctx.translateBy(x: 0.0, y: frame.size.height)
            ctx.scaleBy(x: 1.0, y: -1.0)
+          print("ctx 3")
            ctx.scaleBy(x: scale, y: scale)
            ctx.drawPDFPage(page)
+          print("ctx 4")
            img = UIGraphicsGetImageFromCurrentImageContext()
          }
-         
+         print("ctx end")
          UIGraphicsEndImageContext()
+        }
          print(">>>> UIGraphicsEndImageContext WITH SIZE: \(   frame.size)")
          print(">>>>++++++ Rendered PDF Image Size: \(img?.size ?? CGSize.zero)")
          return img
@@ -64,14 +78,14 @@ open class PdfPage {
    
   }
   
-  public func image(width: CGFloat) -> UIImage? {
+  public func image(width: CGFloat, check: (()->(Bool))?) -> UIImage? {
     let frame = self.frame
-    return image(scale:  UIScreen.main.scale * width/frame.size.width)?.screenScaled()
+    return image(scale:  UIScreen.main.scale * width/frame.size.width, check: check)?.screenScaled()
   }
   
-  public func image(height: CGFloat) -> UIImage? {
+  public func image(height: CGFloat, check: (()->(Bool))?) -> UIImage? {
     let frame = self.frame
-    return image(scale:  UIScreen.main.scale * height/frame.size.height)?.screenScaled()
+    return image(scale:  UIScreen.main.scale * height/frame.size.height, check: check)?.screenScaled()
   }
   
   fileprivate init(page: CGPDFPage) { self.page = page }

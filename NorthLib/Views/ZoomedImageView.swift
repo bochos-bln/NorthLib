@@ -33,7 +33,7 @@ public protocol ZoomedPdfImageSpec : OptionalImage {
   var canRequestHighResImg: Bool { get }
   var maxRenderingZoomScale: CGFloat { get }
   var nextRenderingZoomScale: CGFloat { get }
-  func renderImageWithScale(scale: CGFloat) -> UIImage?
+  func renderImageWithScale(scale: CGFloat, check: (()->(Bool))?) -> UIImage?
 }
 
 extension ZoomedPdfImageSpec{
@@ -53,20 +53,20 @@ extension ZoomedPdfImageSpec{
     }
   }
   
-  public func renderImageWithNextScale() -> UIImage? {
+  public func renderImageWithNextScale(check: (()->(Bool))?) -> UIImage? {
     let next = self.nextRenderingZoomScale
     if next > maxRenderingZoomScale { return nil }
-    return self.renderImageWithScale(scale: next)
+    return self.renderImageWithScale(scale: next, check:check)
   }
   
-  public func renderImageWithNextScale( callback : @escaping (UIImage?)->()){
+  public func renderImageWithNextScale( callback : @escaping (UIImage?)->(), check: (()->(Bool))?){
     let next = self.nextRenderingZoomScale
     if next > maxRenderingZoomScale {
       callback(nil)
       return
     }
     DispatchQueue(label: "PdfTest.render.detail.image.queue").async {
-      callback(self.renderImageWithScale(scale: next))
+      callback(self.renderImageWithScale(scale: next, check:check))
     }
   }
 }
