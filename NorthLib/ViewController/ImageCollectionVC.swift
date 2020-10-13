@@ -109,6 +109,21 @@ extension ImageCollectionVC {
       guard let strongSelf = self else { return UIView() }
       if let ziv = oview as? ZoomedImageView {
         ziv.optionalImage = strongSelf.images[index]
+//        ziv.onHighResImgNeeded(zoomFactor: 1.1) { (oi, callback) in
+//          var oi = oi
+//          guard let poi = oi as? ZoomedPdfImageSpec else  {
+//            self?.log("Unexpected: Cannot render PDF to image wrong item passed")
+//            callback(false)
+//            return
+//          }
+//          guard let img = poi.renderImageWithNextScale() else {
+//            self?.log("Render PDF to image failed")
+//            callback(false)
+//            return
+//          }
+//          oi.image = img
+//          callback(true)
+//        }
         return ziv
       }
       else {
@@ -116,6 +131,71 @@ extension ImageCollectionVC {
         ziv.onTap { (oimg, x, y) in
           strongSelf.zoomedImageViewTapped(oimg, x, y)
         }
+        ziv.onHighResImgNeeded(closure: self?.onHighResImgNeededClosure)
+        /*ziv.onHighResImgNeeded(zoomFactor: 1.1) { (oi, callback) in
+          var oi = oi
+          guard let poi = oi as? ZoomedPdfImageSpec else  {
+            self?.log("Unexpected: Cannot render PDF to image wrong item passed")
+            callback(false)
+            return
+          }
+          
+          poi.renderImageWithNextScale { (img) in
+            print("Rendered Image is There ..back to main")
+            onMain {
+              print("exchange img on main")
+              oi.image = img
+              callback(true)
+            }
+          }
+          return;
+          //OLD SYNC CODE EXECUTED ON MAIN
+          let oldImage = oi.image
+          
+          guard let img = poi.renderImageWithNextScale() else {
+            self?.log("Render PDF to image failed")
+            callback(false)
+            return
+          }
+          //Check What Happen? an empty image would be passed! same effect if UIImage() placed/exchanged
+//          //screen scale = 2x 5k *2 = 10k
+          if img.size.width > 5000 {
+            //test write to file
+            self?.log("Test...to resize huge image")
+//            oi.image = img.screenScaled()//seems to be an empty image scaled also gets blue ;-(
+//            oi.image = UIImage()
+            
+            if let data = img.pngData() {
+              let paths = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)
+              let filename = paths[0].appendingPathComponent("copy.png")
+              print("Try to write large img to: \(filename)")
+              do{ try? data.write(to: filename)}
+//              catch err {
+//                print("Error while write file: \(err)")
+//              }
+            }
+            
+            oi.image = img
+            self?.log("...resized!")
+             callback(true)
+            return
+          }
+//            else  if img.size.width > 2000 {
+//                      //test write to file
+//                      self?.log("Test...to resize huge image")
+//          //            oi.image = img.screenScaled()
+//                      oi.image = UIImage()
+//                      self?.log("...resized!")
+//                       callback(true)
+//                      return
+//                    }
+          
+          
+          self?.log("render image done")
+          oi.image = img
+          callback(true)
+        }
+ */
         return ziv
       }
     }

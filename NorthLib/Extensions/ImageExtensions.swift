@@ -73,5 +73,4 @@ public extension UIImage {
                    scale: UIScreen.main.scale,
                    orientation: self.imageOrientation)
   }
-  
 } // UIImage

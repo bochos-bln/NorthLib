@@ -27,7 +27,9 @@ extension OptionalImage {
 
 // MARK: - ZoomedPdfImageSpec : OptionalImage (Protocol)
 public protocol ZoomedPdfImageSpec : OptionalImage {
-  var pdfFilename: String { get }
+//  var pdfFilename: String { get }
+  var pdfPage: PdfPage { get }
+  var pageDescription: String { get }
   var canRequestHighResImg: Bool { get }
   var maxRenderingZoomScale: CGFloat { get }
   var nextRenderingZoomScale: CGFloat { get }
@@ -55,6 +57,17 @@ extension ZoomedPdfImageSpec{
     let next = self.nextRenderingZoomScale
     if next > maxRenderingZoomScale { return nil }
     return self.renderImageWithScale(scale: next)
+  }
+  
+  public func renderImageWithNextScale( callback : @escaping (UIImage?)->()){
+    let next = self.nextRenderingZoomScale
+    if next > maxRenderingZoomScale {
+      callback(nil)
+      return
+    }
+    DispatchQueue(label: "PdfTest.render.detail.image.queue").async {
+      callback(self.renderImageWithScale(scale: next))
+    }
   }
 }
 
@@ -426,3 +439,28 @@ extension ZoomedImageView: UIScrollViewDelegate{
     }
   }
 }
+
+
+/*****
+ 
+ 
+ 
+ PDF Test : ImageCollectionVC
+ - images: [OptionalImage] = [ZoomedPdfImage(pdfPage: page, pageDescription: "\(pdfFilename) Page : \(pagenumber)")]
+ - self.onHighResImgNeeded { (oimg, callback) in
+      ....
+        pdf_img.renderImageWithNextScale()
+ 
+ 
+ 
+ ImageCollectionVC : PageCollectionVC
+ - images: [OptionalImage]
+ //extension ImageCollectionVC{
+ - public func onHighResImgNeeded(zoomFactor: CGFloat = 1.1, ... calls PDF Test
+ 
+ - setupViewProvider
+      - ziv ... ZoomedImageView
+            ziv.onHighResImgNeeded
+ 
+            optionalImage: OptionalImage?  => ZoomedPdfImage
+ */

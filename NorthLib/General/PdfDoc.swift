@@ -27,25 +27,41 @@ open class PdfPage {
   public var frame: CGRect { page.getBoxRect(.cropBox) }
   
   public func image(scale: CGFloat = 1.0) -> UIImage? {
-    var img: UIImage?
-    var frame = self.frame
-    frame.size.width *= scale
-    frame.size.height *= scale
-    frame.origin.x = 0
-    frame.origin.y = 0
-    UIGraphicsBeginImageContext(frame.size)
-    if let ctx = UIGraphicsGetCurrentContext() {
-      ctx.saveGState()
-      UIColor.white.set()
-      ctx.fill(frame)
-      ctx.translateBy(x: 0.0, y: frame.size.height)
-      ctx.scaleBy(x: 1.0, y: -1.0)
-      ctx.scaleBy(x: scale, y: scale)
-      ctx.drawPDFPage(page)
-      img = UIGraphicsGetImageFromCurrentImageContext()
+    //Autoreleasepool helps to read debug out, remove it later for tests
+    return autoreleasepool { () -> UIImage? in
+       
+      print(">>>> TRY TO RENDER IMAGE WITH SCALE: \(scale) on MAin? : \(Thread.isMainThread)")
+         var img: UIImage?
+         var frame = self.frame
+         frame.size.width *= scale
+         frame.size.height *= scale
+         frame.origin.x = 0
+         frame.origin.y = 0
+       
+         print(">>>> UIGraphicsBeginImageContext WITH SIZE: \(   frame.size)")
+      
+         UIGraphicsBeginImageContext(frame.size)
+         if let ctx = UIGraphicsGetCurrentContext() {
+           ctx.saveGState()
+           UIColor.white.set()
+           ctx.fill(frame)
+           ctx.translateBy(x: 0.0, y: frame.size.height)
+           ctx.scaleBy(x: 1.0, y: -1.0)
+           ctx.scaleBy(x: scale, y: scale)
+           ctx.drawPDFPage(page)
+           img = UIGraphicsGetImageFromCurrentImageContext()
+         }
+         
+         UIGraphicsEndImageContext()
+         print(">>>> UIGraphicsEndImageContext WITH SIZE: \(   frame.size)")
+         print(">>>>++++++ Rendered PDF Image Size: \(img?.size ?? CGSize.zero)")
+         return img
+ 
     }
-    UIGraphicsEndImageContext()
-    return img
+    
+    
+    
+   
   }
   
   public func image(width: CGFloat) -> UIImage? {
