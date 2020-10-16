@@ -45,6 +45,7 @@ public class Overlay: NSObject, OverlaySpec, UIGestureRecognizerDelegate {
   private var closeDuration: Double { get { return debug ? 3.0 : 0.25 } }
   private var debug = false
   private var closeAction : (() -> ())?
+  private var updatedCloseFrame : (() -> (CGRect?))?
   private var onCloseHandler: (() -> ())?
   
   deinit {
@@ -79,6 +80,25 @@ public class Overlay: NSObject, OverlaySpec, UIGestureRecognizerDelegate {
   // MARK: - onClose/onCloseHandler
   public func onClose(closure: (() -> ())?) {
     self.onCloseHandler = closure
+  }
+  
+  public func onRequestUpdatedCloseFrame(closure: (() -> (CGRect?))?) {
+    self.updatedCloseFrame = closure
+  }
+  
+  public func setCloseActionToShrink(){
+    closeAction = { [weak self] in
+      guard let self = self else { return }
+      guard let fromFrame = self.overlayView?.frame else {
+        self.close(animated: true, toBottom: true)
+        return
+      }
+      guard let toFrame = self.updatedCloseFrame?() else {
+        self.close(animated: true, toBottom: true)
+        return
+      }
+      self.close(fromRect: fromFrame, toRect: toFrame)
+    }
   }
   
   // MARK: - addToActiveVC
@@ -169,7 +189,7 @@ public class Overlay: NSObject, OverlaySpec, UIGestureRecognizerDelegate {
     overlayView?.isHidden = false
     closeAction = {self.close(animated: false)}
   }
-  
+    
   // MARK: open animated
   public func open(animated: Bool, fromBottom: Bool) {
     addToActiveVC()
@@ -304,6 +324,7 @@ public class Overlay: NSObject, OverlaySpec, UIGestureRecognizerDelegate {
       return
     }
     
+    self.contentView?.isHidden = true
     overlayView?.isHidden = false
     targetSnapshot.alpha = 0.0
     
@@ -325,7 +346,12 @@ public class Overlay: NSObject, OverlaySpec, UIGestureRecognizerDelegate {
     }
     
     fromSnapshot.layer.masksToBounds = true
+    
+    var fromFrame = fromFrame
+    fromFrame.origin.y -= overlayView?.frame.origin.y ?? 0
     fromSnapshot.frame = fromFrame
+    
+    fromSnapshot.contentMode = .scaleAspectFit
     
     overlayView?.addSubview(fromSnapshot)
     overlayView?.addSubview(targetSnapshot)
@@ -337,18 +363,17 @@ public class Overlay: NSObject, OverlaySpec, UIGestureRecognizerDelegate {
       UIView.addKeyframe(withRelativeStartTime: 0.0, relativeDuration: 0.7) {
         fromSnapshot.frame = toFrame
       }
-      
-      UIView.addKeyframe(withRelativeStartTime: 0.5, relativeDuration: 0.4) {
-        fromSnapshot.alpha = 0.0
+      UIView.addKeyframe(withRelativeStartTime: 0.5, relativeDuration: 0.2) {
+        targetSnapshot.alpha = 1.0
       }
       UIView.addKeyframe(withRelativeStartTime: 0.7, relativeDuration: 0.3) {
-        targetSnapshot.alpha = 1.0
+        fromSnapshot.alpha = 0.0
       }
       
     }) { (success) in
       self.contentView?.isHidden = false
       targetSnapshot.removeFromSuperview()
-      targetSnapshot.removeFromSuperview()
+      fromSnapshot.removeFromSuperview()
     }
   }
   
@@ -412,13 +437,21 @@ public class Overlay: NSObject, OverlaySpec, UIGestureRecognizerDelegate {
       return
     }
     
+    var toRect = toRect
+    
+    if let updatedFrame = self.updatedCloseFrame?() {
+      toRect = updatedFrame
+    }
+    
     if debug {
       print("todo close fromRect", fromRect, "toRect", toRect)
       overlaySnapshot.layer.borderColor = UIColor.magenta.cgColor
       overlaySnapshot.layer.borderWidth = 2.0
     }
-    
+    toRect.origin.y -= overlayView?.frame.origin.y ?? 0
     overlaySnapshot.frame = fromRect
+    overlaySnapshot.contentMode = .scaleAspectFit
+    
     overlayView?.addSubview(overlaySnapshot)
     if closing { return }
     closing = true
