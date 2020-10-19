@@ -26,7 +26,7 @@ extension OptionalImage {
 }
 
 // MARK: - ZoomedPdfImageSpec : OptionalImage (Protocol)
-public protocol ZoomedPdfImageSpec : OptionalImage {
+public protocol ZoomedPdfImageSpec : OptionalImage, DoesLog {
 //  var pdfFilename: String { get }
   var pdfPage: PdfPage { get }
   var pageDescription: String { get }
@@ -49,19 +49,27 @@ extension ZoomedPdfImageSpec{
         ///if there is no image yet, generate the Image within minimum needed scale
         return 1.0
       }
-      return 2*img.size.width/UIScreen.main.nativeBounds.width
+      let ns = 2*img.size.width/UIScreen.main.nativeBounds.width
+      print("NextRendering ZoomScale: \(ns) = \(img.size.width) / \(UIScreen.main.nativeBounds.width)")
+      return ns
+        
     }
   }
   
   public func renderImageWithNextScale(check: (()->(Bool))?) -> UIImage? {
     let next = self.nextRenderingZoomScale
-    if next > maxRenderingZoomScale { return nil }
+    if next > maxRenderingZoomScale {
+        log("Stop Rendering reached Limit of: \(maxRenderingZoomScale) next would be: \(next)")
+      return nil
+      
+    }
     return self.renderImageWithScale(scale: next, check:check)
   }
   
   public func renderImageWithNextScale( callback : @escaping (UIImage?)->(), check: (()->(Bool))?){
     let next = self.nextRenderingZoomScale
     if next > maxRenderingZoomScale {
+      log("Stop Rendering reached Limit of: \(maxRenderingZoomScale) next would be: \(next)")
       callback(nil)
       return
     }

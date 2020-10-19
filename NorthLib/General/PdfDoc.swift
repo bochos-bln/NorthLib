@@ -30,7 +30,7 @@ open class PdfPage {
     //Autoreleasepool helps to read debug out, remove it later for tests
     return autoreleasepool { () -> UIImage? in
        
-      print(">>>> TRY TO RENDER IMAGE WITH SCALE: \(scale) on MAin? : \(Thread.isMainThread)")
+      print(">>>> TRY TO RENDER IMAGE WITH SCALE: \(scale) on MAin? : \(Thread.isMainThread) hasCheckCallback? \(check != nil)")
          var img: UIImage?
          var frame = self.frame
          frame.size.width *= scale
@@ -60,6 +60,8 @@ open class PdfPage {
            ctx.scaleBy(x: 1.0, y: -1.0)
           print("ctx 3")
            ctx.scaleBy(x: scale, y: scale)
+          print("ctx 3b")
+          ctx.endPDFPage()
            ctx.drawPDFPage(page)
           print("ctx 4")
            img = UIGraphicsGetImageFromCurrentImageContext()
