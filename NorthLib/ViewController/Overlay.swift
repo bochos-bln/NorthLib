@@ -363,10 +363,10 @@ public class Overlay: NSObject, OverlaySpec, UIGestureRecognizerDelegate {
       UIView.addKeyframe(withRelativeStartTime: 0.0, relativeDuration: 0.7) {
         fromSnapshot.frame = toFrame
       }
-      UIView.addKeyframe(withRelativeStartTime: 0.5, relativeDuration: 0.2) {
+      UIView.addKeyframe(withRelativeStartTime: 0.7, relativeDuration: 0.15) {
         targetSnapshot.alpha = 1.0
       }
-      UIView.addKeyframe(withRelativeStartTime: 0.7, relativeDuration: 0.3) {
+      UIView.addKeyframe(withRelativeStartTime: 0.85, relativeDuration: 0.15) {
         fromSnapshot.alpha = 0.0
       }
       
@@ -443,6 +443,9 @@ public class Overlay: NSObject, OverlaySpec, UIGestureRecognizerDelegate {
       toRect = updatedFrame
     }
     
+    overlaySnapshot.contentMode = .scaleAspectFit
+    
+    
     if debug {
       print("todo close fromRect", fromRect, "toRect", toRect)
       overlaySnapshot.layer.borderColor = UIColor.magenta.cgColor
@@ -450,20 +453,19 @@ public class Overlay: NSObject, OverlaySpec, UIGestureRecognizerDelegate {
     }
     toRect.origin.y -= overlayView?.frame.origin.y ?? 0
     overlaySnapshot.frame = fromRect
-    overlaySnapshot.contentMode = .scaleAspectFit
-    
+    overlaySnapshot.contentMode = .scaleAspectFill
     overlayView?.addSubview(overlaySnapshot)
     if closing { return }
     closing = true
     UIView.animateKeyframes(withDuration: closeDuration, delay: 0, animations: {
-      UIView.addKeyframe(withRelativeStartTime: 0.0, relativeDuration: 0.4) {
+      UIView.addKeyframe(withRelativeStartTime: 0.0, relativeDuration: 0.1) {
         self.contentView?.alpha = 0.0
       }
-      UIView.addKeyframe(withRelativeStartTime: 0.0, relativeDuration: 0.7) {
+      UIView.addKeyframe(withRelativeStartTime: 0.1, relativeDuration: 0.7) {
         overlaySnapshot.frame = toRect
         
       }
-      UIView.addKeyframe(withRelativeStartTime: 0.7, relativeDuration: 0.3) {
+      UIView.addKeyframe(withRelativeStartTime: 0.8, relativeDuration: 0.2) {
         overlaySnapshot.alpha = 0.0
       }
       UIView.addKeyframe(withRelativeStartTime: 0.0, relativeDuration: 1) {
