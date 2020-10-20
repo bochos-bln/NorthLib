@@ -33,7 +33,7 @@ public protocol ZoomedPdfImageSpec : OptionalImage, DoesLog {
   var canRequestHighResImg: Bool { get }
   var maxRenderingZoomScale: CGFloat { get }
   var nextRenderingZoomScale: CGFloat { get }
-  func renderImageWithScale(scale: CGFloat, check: (()->(Bool))?) -> UIImage?
+  func renderImageWithScale(scale: CGFloat) -> UIImage?
 }
 
 extension ZoomedPdfImageSpec{
@@ -50,7 +50,9 @@ extension ZoomedPdfImageSpec{
         return 1.0
       }
       let ns = 2*img.size.width/UIScreen.main.nativeBounds.width
-      print("NextRendering ZoomScale: \(ns) = \(img.size.width) / \(UIScreen.main.nativeBounds.width)")
+//      let ns = 2.0*UIScreen.main.scale*img.size.width/UIScreen.main.nativeBounds.width
+      
+      print("NextRendering ZoomScale: \(ns) = \(img.size.width)/ \(UIScreen.main.nativeBounds.width)")
       return ns
         
     }
@@ -63,7 +65,7 @@ extension ZoomedPdfImageSpec{
       return nil
       
     }
-    return self.renderImageWithScale(scale: next, check:check)
+    return self.renderImageWithScale(scale: next)
   }
   
   public func renderImageWithNextScale( callback : @escaping (UIImage?)->(), check: (()->(Bool))?){
@@ -74,7 +76,7 @@ extension ZoomedPdfImageSpec{
       return
     }
     DispatchQueue(label: "PdfTest.render.detail.image.queue").async {
-      callback(self.renderImageWithScale(scale: next, check:check))
+      callback(self.renderImageWithScale(scale: next))
     }
   }
 }
@@ -333,6 +335,14 @@ extension ZoomedImageView{
     let size = imageView.frame.size
     guard let closure = onTapClosure else { return }
     guard let oi = self.optionalImage else { return }
+    
+    if true {//THIS WOULD BE THE RIGHT ZOOM SCALE SO RENDER... gives the wrong one!
+      print("DEBUG ZOOM SCALES within handleSingleTap before:\( self.scrollView.zoomScale) \(self.scrollView.contentSize) \(self.imageView.image?.size)")
+      self.scrollView.setZoomScale(1.0/UIScreen.main.scale, animated: true)
+      
+      return
+    }
+    
     closure(oi,
             Double(loc.x / (size.width / scrollView.zoomScale )),
             Double(loc.y / (size.height / scrollView.zoomScale )))
@@ -354,9 +364,10 @@ extension ZoomedImageView{
       scrollView.setZoomScale(scrollView.minimumZoomScale,
                               animated: true)
     }
-      ///Otherwise Zoom Out in to tap loacation
+    ///Otherwise Zoom In to tap loacation
     else {
       let maxZoom = scrollView.maximumZoomScale
+      print("Max Zoom: \(maxZoom) if bigger than 2 limit")
       if maxZoom > 2 { scrollView.maximumZoomScale = 2  }
       let tapLocation = tapR.location(in: tapR.view)
       let newCenter = imageView.convert(tapLocation, from: scrollView)
@@ -416,6 +427,7 @@ extension ZoomedImageView{
     self.setImage(image)
     let newSc = oldImg.size.width * scrollView.zoomScale / image.size.width
     scrollView.zoomScale = newSc
+    print("updateImagewithHighResImage: zoomscale: \(newSc)")
     scrollView.setContentOffset(contentOffset, animated: false)
     self.updateConstraintsForSize(self.bounds.size)
   }
@@ -430,6 +442,7 @@ extension ZoomedImageView: UIScrollViewDelegate{
   public func scrollViewDidZoom(_ scrollView: UIScrollView) {
     //Center if needed
     updateConstraintsForSize(self.bounds.size)
+    print("             sv zooming current zoomscale: \(scrollView.zoomScale)")
     //request high res Image if possible
     if zoomEnabled,
       self.onHighResImgNeededZoomFactor <= scrollView.zoomScale,
@@ -438,8 +451,10 @@ extension ZoomedImageView: UIScrollViewDelegate{
       let closure = onHighResImgNeededClosure {
       guard let _optionalImage = optionalImage else { return }
       self.highResImgRequested = true
+      print("             sv zooming request high res img! Current svSize: \(scrollView.contentSize) imgSize:\(imageView.image?.size)")
       closure(_optionalImage, { success in
         if success, let img = _optionalImage.image {
+          //Problem: 0.3333 != oldImg.size.width * scrollView.zoomScale / image.size.width
           self.updateImagewithHighResImage(img)
         }
         self.highResImgRequested = false
