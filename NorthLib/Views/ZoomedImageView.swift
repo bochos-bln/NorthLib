@@ -442,24 +442,35 @@ extension ZoomedImageView: UIScrollViewDelegate{
   public func scrollViewDidZoom(_ scrollView: UIScrollView) {
     //Center if needed
     updateConstraintsForSize(self.bounds.size)
-    print("             sv zooming current zoomscale: \(scrollView.zoomScale)")
+    print("scrollViewDidZoom::: zooming current zoomscale: \(scrollView.zoomScale)")
     //request high res Image if possible
-    if zoomEnabled,
-      self.onHighResImgNeededZoomFactor <= scrollView.zoomScale,
-      self.highResImgRequested == false,
-      (optionalImage as? ZoomedPdfImageSpec)?.canRequestHighResImg ?? true,
-      let closure = onHighResImgNeededClosure {
-      guard let _optionalImage = optionalImage else { return }
-      self.highResImgRequested = true
-      print("             sv zooming request high res img! Current svSize: \(scrollView.contentSize) imgSize:\(imageView.image?.size)")
-      closure(_optionalImage, { success in
-        if success, let img = _optionalImage.image {
-          //Problem: 0.3333 != oldImg.size.width * scrollView.zoomScale / image.size.width
-          self.updateImagewithHighResImage(img)
-        }
-        self.highResImgRequested = false
-      })
-    }
+    if zoomEnabled == false { return }
+    if self.onHighResImgNeededZoomFactor > scrollView.zoomScale { return }
+    if self.highResImgRequested == true { return }
+    if let zPdfImg = optionalImage as? ZoomedPdfImageSpec, zPdfImg.canRequestHighResImg == false { return }
+    guard let requestHrImageClosure = onHighResImgNeededClosure else { return }
+    guard let _optionalImage = optionalImage else { return }
+
+    self.highResImgRequested = true
+    print("scrollViewDidZoom::: zooming request high res img! Current svSize: \(scrollView.contentSize) imgSize:\(imageView.image?.size)")
+    
+    requestHrImageClosure(_optionalImage, { success in
+      if success, let img = _optionalImage.image {
+        //Problem: 0.3333 != oldImg.size.width * scrollView.zoomScale / image.size.width
+        self.updateImagewithHighResImage(img)
+        /****
+         CASES:
+         #1 there is an image wich is similar to current zoom scale
+         
+            #2 limited image e.g. request 32x got 15x due memory limitation
+         
+         */
+      } else {
+        //may disable next zoom request, but not here!?
+        //where to set maxZoomScale to double tap maxZoom <=> full page zoomed out
+      }
+      self.highResImgRequested = false
+    })
   }
 }
 
