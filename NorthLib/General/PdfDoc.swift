@@ -26,13 +26,12 @@ open class PdfPage {
   ///   clipped to this rectangle"
   public var frame: CGRect { page.getBoxRect(.cropBox) }
   
-  public func image(scale: CGFloat = 1.0, useDeviceFrame:Bool = false) -> UIImage? {
+  public func image(scale: CGFloat = 1.0) -> UIImage? {
     //Autoreleasepool helps to read debug out, remove it later for tests
     return autoreleasepool { () -> UIImage? in
       print(">>>> TRY TO RENDER IMAGE WITH SCALE: \(scale)")
       var img: UIImage?
-      var frame = useDeviceFrame ? CGRect(origin: .zero, size: UIScreen.main.nativeBounds.size) : self.frame
-//      var frame = self.frame
+      var frame = self.frame
       frame.size.width *= scale
       frame.size.height *= scale
       frame.origin.x = 0
