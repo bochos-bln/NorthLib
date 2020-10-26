@@ -33,6 +33,7 @@ public protocol ZoomedPdfImageSpec : OptionalImage, DoesLog {
   var canRequestHighResImg: Bool { get }
   var maxRenderingZoomScale: CGFloat { get }
   var nextRenderingZoomScale: CGFloat { get }
+  var zoomLimit: CGFloat { get }
   func renderImageWithScale(scale: CGFloat) -> UIImage?
 }
 
@@ -40,6 +41,22 @@ extension ZoomedPdfImageSpec{
   public var canRequestHighResImg: Bool {
     get {
       return nextRenderingZoomScale <= maxRenderingZoomScale
+    }
+  }
+  
+  
+  //Its not a zoom Limit => TBD NAME IT!
+  public var zoomLimit:CGFloat{
+    get{
+      return 2.0//x:  7.559 5s: 2.8670
+      //ip 5s => 2x >1.5
+      //ip x => 3x 1.1
+      return 10/(UIScreen.main.scale*UIScreen.main.scale)//x: 4.199737264436737 5s:3.5
+      return 3.3/UIScreen.main.scale //X:ZoomScale: 4.157739891792369 5s:2.365
+      //IP5s >>>> TRY TO RENDER IMAGE WITH SCALE: 1.5768613515538468 2.0 RATIO
+      return 1.1//TRY TO RENDER IMAGE WITH SCALE: 4.15773989179237  //3.0RATIO
+      return 1.2//> TRY TO RENDER IMAGE WITH SCALE: 4.535716245591675
+      return 1.3333333 //1.333 => 5.03
     }
   }
   
@@ -51,11 +68,11 @@ extension ZoomedPdfImageSpec{
       }
 //      let ns = 2*img.size.width/UIScreen.main.nativeBounds.width
 //      let ns = 2.381101333333333*UIScreen.main.scale*img.size.width/UIScreen.main.nativeBounds.width
-      let ns = 2.0*UIScreen.main.scale*img.size.width/pdfPage.frame.size.width
+      let ns = zoomLimit*UIScreen.main.scale*img.size.width/pdfPage.frame.size.width
       
-      print("$nzs Calculate next:\n \(img.size.width) (current image width)/ \(UIScreen.main.nativeBounds.width)(main bounds width) => Ratio \(img.size.width/UIScreen.main.nativeBounds.width)\n 2*mainscreenScale \(UIScreen.main.scale)*ratio =>")
+      print("$nzs Calculate next:\n  image width: \(img.size.width) (current image width)/ \(UIScreen.main.nativeBounds.width)(main bounds width) => Ratio \(img.size.width/UIScreen.main.nativeBounds.width)\n 2*mainscreenScale \(UIScreen.main.scale)*ratio =>")
       
-      print("$nzs NextRendering ZoomScale: \(ns) = \(img.size.width)/ \(UIScreen.main.nativeBounds.width)")
+      print("$nzs NextRendering ZoomScale: \(ns) = \(zoomLimit)*\(UIScreen.main.scale)*\(img.size.width)/\(pdfPage.frame.size.width)")
       
       print("$nzs initial zoom scale based on PDF Page: \(round(10.0*UIScreen.main.nativeBounds.width/pdfPage.frame.size.width)/10) \(UIScreen.main.nativeBounds.width)/\(pdfPage.frame.size.width))")
       print("$nzs current zoom scale based on PDF Page: \(round(10.0*img.size.width/pdfPage.frame.size.width)/10) \(img.size.width)/\(pdfPage.frame.size.width))")
@@ -303,7 +320,7 @@ extension ZoomedImageView{
 
 // MARK: - Handler
 extension ZoomedImageView{
-  public func onHighResImgNeeded(zoomFactor: CGFloat = 1.1,
+  public func onHighResImgNeeded(zoomFactor: CGFloat = 1.01,
                                  closure: ((OptionalImage,
     @escaping (Bool)-> ()) -> ())?) {
     self.onHighResImgNeededClosure = closure
@@ -376,7 +393,9 @@ extension ZoomedImageView{
     else {
       let maxZoom = scrollView.maximumZoomScale
       print("Max Zoom: \(maxZoom) if bigger than 2 limit")
-      if maxZoom > 2 { scrollView.maximumZoomScale = 2  }
+      
+      let zoomLimit = (optionalImage as? ZoomedPdfImageSpec)?.zoomLimit ?? 2.0
+      if maxZoom > zoomLimit { scrollView.maximumZoomScale = zoomLimit  }
       let tapLocation = tapR.location(in: tapR.view)
       let newCenter = imageView.convert(tapLocation, from: scrollView)
       let zoomRect
@@ -384,9 +403,11 @@ extension ZoomedImageView{
       scrollView.zoom(to: zoomRect,
                       animated: true)
       scrollView.isScrollEnabled = true
-      if maxZoom > 2 { scrollView.maximumZoomScale = maxZoom  }
+      if maxZoom > zoomLimit { scrollView.maximumZoomScale = maxZoom  }
     }
   }
+  
+
 }
 
 // MARK: - Helper
