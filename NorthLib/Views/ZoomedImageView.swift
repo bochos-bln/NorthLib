@@ -49,10 +49,18 @@ extension ZoomedPdfImageSpec{
         ///if there is no image yet, generate the Image within minimum needed scale
         return 1.0
       }
-      let ns = 2*img.size.width/UIScreen.main.nativeBounds.width
-//      let ns = 2.0*UIScreen.main.scale*img.size.width/UIScreen.main.nativeBounds.width
+//      let ns = 2*img.size.width/UIScreen.main.nativeBounds.width
+//      let ns = 2.381101333333333*UIScreen.main.scale*img.size.width/UIScreen.main.nativeBounds.width
+      let ns = 2.0*UIScreen.main.scale*img.size.width/pdfPage.frame.size.width
       
-      print("NextRendering ZoomScale: \(ns) = \(img.size.width)/ \(UIScreen.main.nativeBounds.width)")
+      print("$nzs Calculate next:\n \(img.size.width) (current image width)/ \(UIScreen.main.nativeBounds.width)(main bounds width) => Ratio \(img.size.width/UIScreen.main.nativeBounds.width)\n 2*mainscreenScale \(UIScreen.main.scale)*ratio =>")
+      
+      print("$nzs NextRendering ZoomScale: \(ns) = \(img.size.width)/ \(UIScreen.main.nativeBounds.width)")
+      
+      print("$nzs initial zoom scale based on PDF Page: \(round(10.0*UIScreen.main.nativeBounds.width/pdfPage.frame.size.width)/10) \(UIScreen.main.nativeBounds.width)/\(pdfPage.frame.size.width))")
+      print("$nzs current zoom scale based on PDF Page: \(round(10.0*img.size.width/pdfPage.frame.size.width)/10) \(img.size.width)/\(pdfPage.frame.size.width))")
+      print("$nzs current zoom scale based on screen: \(round(10.0*img.size.width/UIScreen.main.nativeBounds.width)/10) \(img.size.width)/\(UIScreen.main.nativeBounds.width))")
+      
       return ns
         
     }
