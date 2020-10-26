@@ -48,6 +48,7 @@ extension ZoomedPdfImageSpec{
   //Its not a zoom Limit => TBD NAME IT!
   public var zoomLimit:CGFloat{
     get{
+      return UIScreen.main.scale
       return 2.0//x:  7.559 5s: 2.8670
       //ip 5s => 2x >1.5
       //ip x => 3x 1.1
@@ -66,6 +67,33 @@ extension ZoomedPdfImageSpec{
         ///if there is no image yet, generate the Image within minimum needed scale
         return 1.0
       }
+      
+      /**
+      Wanted:
+       after
+       1x = 1,4
+       4x = 5.6
+       8x =
+       12x
+       16x
+       1,5,9
+       6.2  // 11.33 // 16.37
+       
+      
+      */
+      var cz = img.size.width/UIScreen.main.nativeBounds.size.width
+      cz = cz == 1 ? 0 : cz
+      print(">> Current Zoom Scale for render: \(cz)")
+      let nz = cz + 4.0
+      let nextZoom = nz*UIScreen.main.nativeBounds.size.width/pdfPage.frame.size.width//Falsch
+      print(">> Next Zoom Level would be: \(nextZoom)")
+      
+      return nextZoom
+      
+//      = UIScreen.main.scale * UIScreen.main.nativeBounds.width*1/frame.size.width
+//      = 2 * 640/892,913 = 1,433510319594406
+      
+      
 //      let ns = 2*img.size.width/UIScreen.main.nativeBounds.width
 //      let ns = 2.381101333333333*UIScreen.main.scale*img.size.width/UIScreen.main.nativeBounds.width
       let ns = zoomLimit*UIScreen.main.scale*img.size.width/pdfPage.frame.size.width
