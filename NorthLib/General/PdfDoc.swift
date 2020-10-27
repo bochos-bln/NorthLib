@@ -26,6 +26,7 @@ open class PdfPage {
   ///   clipped to this rectangle"
   public var frame: CGRect { page.getBoxRect(.cropBox) }
   
+    // MARK: - @PdfPage image render
   public func image(scale: CGFloat = 1.0) -> UIImage? {
     //Autoreleasepool helps to read debug out, remove it later for tests
     return autoreleasepool { () -> UIImage? in
