@@ -42,7 +42,6 @@ public protocol ZoomedPdfImageSpec : OptionalImage, DoesLog {
   var zoomLimit: CGFloat { get }
   
   func renderImageWithScale(scale: CGFloat) -> UIImage?
-  func debugPrintCurrentRZS()
 }
 
 extension ZoomedPdfImageSpec{
@@ -53,11 +52,6 @@ extension ZoomedPdfImageSpec{
   }
   
   public var maxRenderingZoom: CGFloat { get{ return 8.0}}
-  
-  public func debugPrintCurrentRZS(){
-    let currentPdfZS = currentScreenZoomScale*UIScreen.main.nativeBounds.size.width/pdfPage.frame.size.width
-    print("+>>>\n   currentRenderingZoomScale \(currentPdfZS) \n   nextScreenZoomScale: \(nextScreenZoomScale) \n   currentScreenZoomScale: \(currentScreenZoomScale)")
-  }
   
   //Its not a zoom Limit => TBD NAME IT!
   public var zoomLimit:CGFloat{
@@ -228,9 +222,6 @@ open class ZoomedImageView: UIView, ZoomedImageViewSpec {
   public required init(optionalImage: OptionalImage) {
     self.optionalImage = optionalImage
     super.init(frame: CGRect.zero)
-    if let oi = optionalImage as? ZoomedPdfImageSpec {
-      oi.debugPrintCurrentRZS()
-    }
     setup()
   }
   

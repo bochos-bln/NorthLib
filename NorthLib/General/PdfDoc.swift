@@ -30,20 +30,14 @@ open class PdfPage {
   public func image(scale: CGFloat = 1.0) -> UIImage? {
     //Autoreleasepool helps to read debug out, remove it later for tests
     return autoreleasepool { () -> UIImage? in
-      print(">>>> TRY TO RENDER IMAGE WITH SCALE: \(scale)")
       var img: UIImage?
       var frame = self.frame
       frame.size.width *= scale
       frame.size.height *= scale
       frame.origin.x = 0
       frame.origin.y = 0
-      
-      print(">>>> UIGraphicsBeginImageContext WITH SIZE: \(frame.size) PDF Org Frame: \(self.frame)")
       autoreleasepool {
-        
-        
         UIGraphicsBeginImageContext(frame.size)
-        
         if let ctx = UIGraphicsGetCurrentContext() {
           ctx.saveGState()
           UIColor.white.set()
@@ -56,8 +50,6 @@ open class PdfPage {
         }
         UIGraphicsEndImageContext()
       }
-      print(">>>> UIGraphicsEndImageContext WITH SIZE: \(   frame.size)")
-      print(">>>>++++++ Rendered PDF Image Size: \(img?.size ?? CGSize.zero)")
       return img
     }
   }
