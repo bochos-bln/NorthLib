@@ -13,7 +13,7 @@ fileprivate var countVC = 0
 open class PageCollectionVC: UIViewController {
   
   /// The collection view displaying OptionalViews
-  open var collectionView = PageCollectionView()
+  open var collectionView = PageCollectionView()///ToDo: Leak!
   
   /// The Layout object determining the size of the cells
   open var cvLayout: UICollectionViewFlowLayout!

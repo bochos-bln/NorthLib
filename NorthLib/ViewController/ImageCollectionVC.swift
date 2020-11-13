@@ -91,20 +91,7 @@ open class ImageCollectionVC: PageCollectionVC, ImageCollectionVCSpec {
     scrollToIndexPathAfterLayoutSubviews = collectionView.indexPathsForVisibleItems.first
   }
   
-} // PageCollectionVC
-
-// MARK: - OptionalImageItem: Closures
-extension ImageCollectionVC{
-  public func onHighResImgNeeded(zoomFactor: CGFloat = 1.1,
-                                 closure: ((OptionalImage, @escaping (Bool) -> ()) -> ())?){
-    self.onHighResImgNeededClosure = closure
-    self.onHighResImgNeededZoomFactor = zoomFactor
-  }
-}
-
-// MARK: - Helper: ViewProvider
-extension ImageCollectionVC {
-  func setupViewProvider(){
+  open func setupViewProvider(){
     viewProvider { [weak self] (index, oview) in
       guard let strongSelf = self else { return UIView() }
       if let ziv = oview as? ZoomedImageView {
@@ -121,6 +108,20 @@ extension ImageCollectionVC {
     }
   }
   
+  
+} // PageCollectionVC
+
+// MARK: - OptionalImageItem: Closures
+extension ImageCollectionVC{
+  public func onHighResImgNeeded(zoomFactor: CGFloat = 1.1,
+                                 closure: ((OptionalImage, @escaping (Bool) -> ()) -> ())?){
+    self.onHighResImgNeededClosure = closure
+    self.onHighResImgNeededZoomFactor = zoomFactor
+  }
+}
+
+// MARK: - Helper: ViewProvider
+extension ImageCollectionVC {
   /// Due onDisplay(idx) with cellforRowAt(idx) delivers another view than visible
   /// the Tapped Closure is wrapped to work with that kind of implementation
   /// of CollectionView, DataSource and ViewProvider

@@ -25,39 +25,6 @@ extension OptionalImage {
   public var isAvailable: Bool { return image != nil }
 }
 
-// MARK: - ZoomedPdfImageSpec : OptionalImage (Protocol)
-public protocol ZoomedPdfImageSpec : OptionalImage {
-  var pdfFilename: String { get }
-  var canRequestHighResImg: Bool { get }
-  var maxRenderingZoomScale: CGFloat { get }
-  var nextRenderingZoomScale: CGFloat { get }
-  func renderImageWithScale(scale: CGFloat) -> UIImage?
-}
-
-extension ZoomedPdfImageSpec{
-  public var canRequestHighResImg: Bool {
-    get {
-      return nextRenderingZoomScale <= maxRenderingZoomScale
-    }
-  }
-  
-  public var nextRenderingZoomScale: CGFloat {
-    get {
-      guard let img = image else {
-        ///if there is no image yet, generate the Image within minimum needed scale
-        return 1.0
-      }
-      return 2*img.size.width/UIScreen.main.nativeBounds.width
-    }
-  }
-  
-  public func renderImageWithNextScale() -> UIImage? {
-    let next = self.nextRenderingZoomScale
-    if next > maxRenderingZoomScale { return nil }
-    return self.renderImageWithScale(scale: next)
-  }
-}
-
 // MARK: - OptionalImageItem : OptionalImage
 /// Reference Implementation
 open class OptionalImageItem: OptionalImage{
@@ -70,7 +37,7 @@ open class OptionalImageItem: OptionalImage{
   fileprivate var onUpdatingClosureClosure: (()->())? = nil
   fileprivate var zoomFactorForRequestingHigherResImage : CGFloat = 1.1
   fileprivate var _image: UIImage?
-  public var image: UIImage?{
+  public weak var image: UIImage?{
     get { return _image }
     set {
       _image = newValue
@@ -159,7 +126,7 @@ open class ZoomedImageView: UIView, ZoomedImageViewSpec {
   }
   
   // MARK: Life Cycle
-  public required init(optionalImage: OptionalImage) {
+  public required init(optionalImage: OptionalImage?) {
     self.optionalImage = optionalImage
     super.init(frame: CGRect.zero)
     setup()

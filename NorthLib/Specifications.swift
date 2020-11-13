@@ -43,7 +43,7 @@ public protocol ZoomedImageViewSpec where Self: UIView {
   /// Initialize with optional image, displays the main image if available.
   /// Otherwise the waiting image is displayed and via 'whenAvailable' a closure
   /// is defined to replace the waiting image with the main image (when it is available)
-  init(optionalImage: OptionalImage)
+  init(optionalImage: OptionalImage?)
   
   /// Define closure to call when the X-Button is pressed
   func onX(closure: @escaping ()->())
