@@ -38,7 +38,10 @@ class PdfModelItem : PdfModel/*, PDFOutlineStructure*/ {
   var url:URL?
   
   func item(atIndex: Int) -> ZoomedPdfImageSpec {
-    return ZoomedPdfImage()
+    /**TODO SAVE FOR THUMBNAIL*/
+    let itm = ZoomedPdfImage(url: url, index: atIndex)
+//    itm.pdfUrl = url
+    return itm
   }
   
   static let previewDeviceWithScale : CGFloat = 0.25//4 in a row
@@ -57,6 +60,7 @@ class PdfModelItem : PdfModel/*, PDFOutlineStructure*/ {
       return
     }
     let pdfDocument = PDFDocument(url: url)
+    self.url = url
     self.count = pdfDocument?.pageCount ?? 0
     self.defaultItemSize = pdfDocument?.page(at: 0)?.frame?.size
     /*

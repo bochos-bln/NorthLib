@@ -67,7 +67,7 @@ class PdfRenderService{
       self.semaphore.wait()
       let pdfPage = PDFDocument(url: url)?.page(at: index)
       ///Check if stopped meanwhile
-      if let pdfPage = pdfPage, item.renderingStoped != false {
+      if let pdfPage = pdfPage, item.renderingStoped == false {
         var img : UIImage?
         if let w = width {
           img = pdfPage.image(width: w)

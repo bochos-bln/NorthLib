@@ -21,7 +21,6 @@ public protocol ZoomedPdfImageSpec : OptionalImage {
   var renderingStoped: Bool { get }
   
   var canRequestHighResImg: Bool { get }
-  var maxRenderingZoomScale: CGFloat { get }
   var nextRenderingZoomScale: CGFloat { get }
   
   func renderImageWithNextScale()
@@ -32,7 +31,7 @@ public protocol ZoomedPdfImageSpec : OptionalImage {
 extension ZoomedPdfImageSpec{
   public var canRequestHighResImg: Bool {
     get {
-      return nextRenderingZoomScale <= maxRenderingZoomScale
+      return nextRenderingZoomScale <= ZoomedPdfImageSpecConstants.maxRenderingZoom
     }
   }
   
@@ -57,6 +56,12 @@ public class ZoomedPdfImage: OptionalImageItem, ZoomedPdfImageSpec {
   public private(set) var pdfPageIndex: Int?
   public private(set) var currentScreenZoomScale : CGFloat = 1.0
   
+  convenience init(url:URL?, index:Int) {
+    self.init()
+    self.pdfUrl = url
+    self.pdfPageIndex = index
+  }
+  
   //want screen zoom scales 1, 4, 8, 12...
   public var calculateNextScreenZoomScale: CGFloat {
     get{
@@ -73,7 +78,6 @@ public class ZoomedPdfImage: OptionalImageItem, ZoomedPdfImageSpec {
   
   public var renderingStoped = false
   
-  public private(set) var maxRenderingZoomScale: CGFloat = 0.0
   public private(set) var pageDescription: String = ""
   
   var calculatedNextScreenZoomScale: CGFloat?
@@ -100,7 +104,7 @@ public class ZoomedPdfImage: OptionalImageItem, ZoomedPdfImageSpec {
   
   public func renderImageWithScale(scale: CGFloat) {
     //Prevent Multiple time max rendering
-    if scale > maxRenderingZoomScale {
+    if scale > ZoomedPdfImageSpecConstants.maxRenderingZoom {
       return
     }
     PdfRenderService.render(item: self,

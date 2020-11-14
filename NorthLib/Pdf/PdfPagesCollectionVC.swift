@@ -19,12 +19,15 @@ class PdfPagesCollectionVC : ImageCollectionVC, CanRotate{
   
   var data : PdfModel? {
     didSet{
-//      self.collectionView.reload()
-      guard let model = data else { return }
-      self.index = model.index
-      super.count = model.count
-      self.collectionView.reloadData()
+      updateData()
     }
+  }
+  
+  func updateData(){
+    guard let model = data else { return }
+    self.index = model.index
+    super.count = model.count
+    self.collectionView.reloadData()
   }
   
   deinit {
@@ -34,6 +37,7 @@ class PdfPagesCollectionVC : ImageCollectionVC, CanRotate{
   init(data:PdfModel) {
     self.data = data
     super.init()
+    updateData()
   }
   
   required init?(coder: NSCoder) {
