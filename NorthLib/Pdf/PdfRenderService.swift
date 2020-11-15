@@ -17,35 +17,47 @@ class PdfRenderService{
   private static let sharedInstance = PdfRenderService()
   private init(){}
   
-  private let semaphore = DispatchSemaphore(value: 2)//How many 1:! Renderings parallel?
+  private let userInteractiveSemaphore = DispatchSemaphore(value: 2)//How many 1:! Renderings parallel?
+  private let backgroundSemaphore = DispatchSemaphore(value: 4)//How many 1:! Renderings parallel?
   
-  private let queue = DispatchQueue.init(label: "imageRendererQueue",
+  private let userInteractiveQueue = DispatchQueue.init(label: "imageRendererQueue",
                                  qos: .userInteractive,
+                                 attributes: .concurrent,
+                                 autoreleaseFrequency: .workItem,
+                                 target: nil)
+  
+  private let backgroundQueue = DispatchQueue.init(label: "backgroundImageRendererQueue",
                                  attributes: .concurrent,
                                  autoreleaseFrequency: .workItem,
                                  target: nil)
     
   public static func render(item:ZoomedPdfImageSpec,
                             scale:CGFloat = 1.0,
+                            backgroundRenderer : Bool = false,
                             finischedCallback: @escaping((UIImage?)->())){
     sharedInstance.enqueueRender(item: item,
                                scale: scale,
+                               backgroundRenderer : backgroundRenderer,
                                finischedCallback: finischedCallback)
   }
   
   public static func render(item:ZoomedPdfImageSpec,
                             width: CGFloat,
+                            backgroundRenderer : Bool = false,
                             finischedCallback: @escaping((UIImage?)->())){
     sharedInstance.enqueueRender(item: item,
                                width: width,
+                               backgroundRenderer : backgroundRenderer,
                                finischedCallback: finischedCallback)
   }
   
   public static func render(item:ZoomedPdfImageSpec,
                             height: CGFloat,
+                            backgroundRenderer : Bool = false,
                             finischedCallback: @escaping((UIImage?)->())){
     sharedInstance.enqueueRender(item: item,
                                height: height,
+                               backgroundRenderer : backgroundRenderer,
                                finischedCallback: finischedCallback)
   }
   
@@ -53,9 +65,13 @@ class PdfRenderService{
                              scale:CGFloat = 1.0,
                              width: CGFloat? = nil,
                              height: CGFloat? = nil,
+                             backgroundRenderer : Bool = false,
                              finischedCallback: (@escaping(UIImage?)->())){
-    queue.async { [weak self] in
-      guard let self = self else { return }
+    let queue = backgroundRenderer ? backgroundQueue : userInteractiveQueue
+    let semaphore = backgroundRenderer ? backgroundSemaphore : userInteractiveSemaphore
+    
+    
+    queue.async {
       guard let url = item.pdfUrl else {
         finischedCallback(nil)
         return
@@ -64,7 +80,7 @@ class PdfRenderService{
         finischedCallback(nil)
         return
       }
-      self.semaphore.wait()
+      semaphore.wait()
       let pdfPage = PDFDocument(url: url)?.page(at: index)
       ///Check if stopped meanwhile
       if let pdfPage = pdfPage, item.renderingStoped == false {
@@ -80,7 +96,7 @@ class PdfRenderService{
         }
         finischedCallback(img)
       }
-      self.semaphore.signal()
+      semaphore.signal()
     }
   }
 }

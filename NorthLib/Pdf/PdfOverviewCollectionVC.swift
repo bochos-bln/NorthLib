@@ -70,11 +70,10 @@ class PdfOverviewCollectionVC : UICollectionViewController, CanRotate{
     let _cell = collectionView.dequeueReusableCell(withReuseIdentifier: reuseIdentifier, for: indexPath)
     guard let cell = _cell as? PdfOverviewCvcCell else { return _cell }
     if let pdfModel = self.pdfModel {
-//      cell.imageView.image = pdfModel.thumbnail(atIndex: indexPath.row, finishedClosure: { img in
-//        onMain { cell.imageView.image = img  }
-//      })
-//      //TODO @FRIDAY! ZOOM LENA/CHRISTIAN! enable/disable
-//      cell.label.text = pdfModel.pageMeta[indexPath.row]
+      cell.imageView.image = pdfModel.thumbnail(atIndex: indexPath.row, finishedClosure: { (img) in
+        onMain { cell.imageView.image = img  }
+      })
+      cell.label.text = pdfModel.item(atIndex: indexPath.row)?.pageTitle
     }
 
     return cell

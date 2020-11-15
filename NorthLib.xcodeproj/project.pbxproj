@@ -228,11 +228,11 @@
 			isa = PBXGroup;
 			children = (
 				006A0FDD255EBA25001CBB0B /* OptionalImage.swift */,
-				006A0FE9255EC42E001CBB0B /* PdfRenderService.swift */,
-				006A0FF3255EECF4001CBB0B /* PdfPagesCollectionVC.swift */,
-				006A0FF9255EEDA4001CBB0B /* PdfModel.swift */,
 				006A0FFE255EEDD2001CBB0B /* PdfViewController.swift */,
+				006A0FF3255EECF4001CBB0B /* PdfPagesCollectionVC.swift */,
 				006A1003255EEDF3001CBB0B /* PdfOverviewCollectionVC.swift */,
+				006A0FF9255EEDA4001CBB0B /* PdfModel.swift */,
+				006A0FE9255EC42E001CBB0B /* PdfRenderService.swift */,
 				006A1007255EEE11001CBB0B /* PdfOverviewCvcCell.swift */,
 			);
 			path = Pdf;

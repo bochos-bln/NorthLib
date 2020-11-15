@@ -79,6 +79,11 @@ open class PageCollectionView: UICollectionView, UICollectionViewDelegate,
     func update(pcv: PageCollectionView, idx: Int) {
       if let provider = pcv.provider {
         contentView.subviews.forEach { $0.removeFromSuperview() }
+        /**FAST HACK*/
+        if let ziv = self.page as? ZoomedImageView, let model = ziv.optionalImage as? ZoomedPdfImageSpec {
+          var model = model
+          model.image = nil
+        }
         let page = provider(idx, self.page)
         let isAvailable = page.isAvailable
         if pcv.scrollFromLeftToRight {
@@ -153,7 +158,7 @@ open class PageCollectionView: UICollectionView, UICollectionViewDelegate,
       layout.minimumLineSpacing = swidth
       layout.sectionInset = UIEdgeInsets(top: 0, left: inset, bottom: 0, right: inset)
       isHidden = true 
-      delay(seconds: 0.01) { [weak self] in
+      delay(seconds: 0.01) { [weak self] in//ToDo there is a better way!
         guard let self = self else { return }
         self.isInitialized = true
         if let idx = self.initialIndex { self.index = idx }

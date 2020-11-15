@@ -16,6 +16,8 @@ struct ZoomedPdfImageSpecConstants {
 
 // MARK: - ZoomedPdfImageSpec : OptionalImage (Protocol)
 public protocol ZoomedPdfImageSpec : OptionalImage {
+  var sectionTitle: String? { get set}
+  var pageTitle: String? { get set}
   var pdfUrl: URL? { get }
   var pdfPageIndex: Int? { get }
   var renderingStoped: Bool { get }
@@ -51,7 +53,8 @@ extension ZoomedPdfImageSpec{
 }
 
 public class ZoomedPdfImage: OptionalImageItem, ZoomedPdfImageSpec {
- 
+  public var sectionTitle: String?
+  public var pageTitle: String?
   public private(set) var pdfUrl: URL?
   public private(set) var pdfPageIndex: Int?
   public private(set) var currentScreenZoomScale : CGFloat = 1.0
