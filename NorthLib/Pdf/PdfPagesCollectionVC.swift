@@ -65,7 +65,6 @@ class PdfPagesCollectionVC : ImageCollectionVC, CanRotate{
       guard let self = self else { return UIView() }
       let dataItem = self.data?.item(atIndex: index)
       if let ziv = oview as? ZoomedImageView {
-        ziv.optionalImage?.image = nil//Important to reduce VM CG Image Memory Footprint !!
         ziv.optionalImage = dataItem
         dataItem?.renderFullscreenImageIfNeeded()
         return ziv

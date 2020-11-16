@@ -72,6 +72,9 @@ open class ZoomedImageView: UIView, ZoomedImageViewSpec {
   open override func willMove(toSuperview newSuperview: UIView?) {
     if newSuperview == nil {
       orientationClosure = nil
+      if var pdfImg = optionalImage as? ZoomedPdfImageSpec {
+        pdfImg.image = nil//Important to reduce VM CG Image Memory Footprint !!
+      }
       optionalImage = nil
     }
   }

@@ -79,11 +79,6 @@ open class PageCollectionView: UICollectionView, UICollectionViewDelegate,
     func update(pcv: PageCollectionView, idx: Int) {
       if let provider = pcv.provider {
         contentView.subviews.forEach { $0.removeFromSuperview() }
-        /**FAST HACK*/
-        if let ziv = self.page as? ZoomedImageView, let model = ziv.optionalImage as? ZoomedPdfImageSpec {
-          var model = model
-          model.image = nil
-        }
         let page = provider(idx, self.page)
         let isAvailable = page.isAvailable
         if pcv.scrollFromLeftToRight {
@@ -259,7 +254,6 @@ open class PageCollectionView: UICollectionView, UICollectionViewDelegate,
     if let cell = collectionView.dequeueReusableCell(withReuseIdentifier: 
       PageCollectionView.reuseIdent, for: indexPath) as? PageCell {
       let itemIndex = indexPath.item
-      debug("index \(itemIndex) requested")
       cell.update(pcv: self, idx: itemIndex)
       initialize(itemIndex)
       return cell
