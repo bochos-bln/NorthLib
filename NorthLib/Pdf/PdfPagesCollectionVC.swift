@@ -68,7 +68,7 @@ class PdfPagesCollectionVC : ImageCollectionVC, CanRotate{
       let dataItem = self.data?.item(atIndex: index)
       if let ziv = oview as? ZoomedImageView {
         ziv.optionalImage = dataItem
-        dataItem?.renderFullscreenImageIfNeeded()
+        dataItem?.renderFullscreenImageIfNeeded(finishedCallback: nil)
         return ziv
       }
       else {
@@ -79,9 +79,9 @@ class PdfPagesCollectionVC : ImageCollectionVC, CanRotate{
         }
         ziv.onHighResImgNeeded(zoomFactor: 1.1) { (optionalImage, finishedCallback) in
           guard let oPdfImg = optionalImage as? ZoomedPdfImageSpec else { return }
-          oPdfImg.renderImageWithNextScale()
+          oPdfImg.renderImageWithNextScale(finishedCallback:finishedCallback)
         }
-        dataItem?.renderFullscreenImageIfNeeded()
+        dataItem?.renderFullscreenImageIfNeeded(finishedCallback: nil)
         return ziv
       }
     }

@@ -95,14 +95,16 @@ public class ZoomedPdfImage: OptionalImageItem, ZoomedPdfImageSpec {
   }
   
   public override weak var image: UIImage? {
-    didSet{
+    willSet{
       print("ZoomedPdfImage image set at \(calculatedNextScreenZoomScale ?? 0)x")
+    }
+    didSet{
       calculatedNextScreenZoomScale = nil
     }
   }
   
   public func renderFullscreenImageIfNeeded(finishedCallback: ((Bool) -> ())?) {
-    self.renderImageWithScale(scale:1.0, finishedCallback: finishedCallback)
+    self.renderImageWithScale(scale:1.0/UIScreen.main.scale, finishedCallback: finishedCallback)
   }
   
   public func renderImageWithScale(scale: CGFloat, finishedCallback: ((Bool) -> ())?) {
@@ -112,13 +114,12 @@ public class ZoomedPdfImage: OptionalImageItem, ZoomedPdfImageSpec {
     }
     PdfRenderService.render(item: self,
                             width: UIScreen.main.nativeBounds.width*scale) { img in
-      finishedCallback?(img != nil)
-      //TODO THIS OR THAT!???
       onMain { [weak self] in
         guard let self = self else { return }
-        guard let newImage = img else { return }
+        guard let newImage = img else { finishedCallback?(false); return }
         if self.renderingStoped { return }
         self.image = newImage
+        finishedCallback?(true)
       }
     }
   }
@@ -126,6 +127,7 @@ public class ZoomedPdfImage: OptionalImageItem, ZoomedPdfImageSpec {
   public func stopRendering(){
     self.renderingStoped = true
     self.image = nil
+   
   }
   
   

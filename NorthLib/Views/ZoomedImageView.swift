@@ -282,6 +282,10 @@ extension ZoomedImageView{
     let size = imageView.frame.size
     guard let closure = onTapClosure else { return }
     guard let oi = self.optionalImage else { return }
+    if true{//TEST 1:1
+      print("TEST 1:1 Scale")
+      self.scrollView.setZoomScale(1.0, animated: true)
+    }
     closure(oi,
             Double(loc.x / (size.width / scrollView.zoomScale )),
             Double(loc.y / (size.height / scrollView.zoomScale )))

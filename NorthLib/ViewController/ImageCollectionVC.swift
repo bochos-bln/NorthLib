@@ -128,6 +128,9 @@ extension ImageCollectionVC {
   func zoomedImageViewTapped(_ image: OptionalImage,
                              _ x: Double,
                              _ y: Double) {
+    if let pdfi = image as? ZoomedPdfImageSpec {
+      print("Image tapped: \(pdfi.sectionTitle ?? "?") - \(pdfi.pageTitle ?? "?") page: \((pdfi.pdfPageIndex ?? 0)+1)")
+    }
     onTapClosure?(image,x,y)
   }
 }
