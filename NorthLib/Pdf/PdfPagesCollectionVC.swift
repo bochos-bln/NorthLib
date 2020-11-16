@@ -38,11 +38,13 @@ class PdfPagesCollectionVC : ImageCollectionVC, CanRotate{
     self.data = data
     super.init()
     updateData()
+    
   }
   
   required init?(coder: NSCoder) {
     fatalError("init(coder:) has not been implemented")
   }
+  
   
   override func viewDidLoad() {
     super.viewDidLoad()
@@ -75,7 +77,10 @@ class PdfPagesCollectionVC : ImageCollectionVC, CanRotate{
           guard let self = self else { return }
           self.zoomedImageViewTapped(oimg, x, y)
         }
-//        ziv.onHighResImgNeeded(closure: self?.onHighResImgNeededClosure)????????
+        ziv.onHighResImgNeeded(zoomFactor: 1.1) { (optionalImage, finishedCallback) in
+          guard let oPdfImg = optionalImage as? ZoomedPdfImageSpec else { return }
+          oPdfImg.renderImageWithNextScale()
+        }
         dataItem?.renderFullscreenImageIfNeeded()
         return ziv
       }

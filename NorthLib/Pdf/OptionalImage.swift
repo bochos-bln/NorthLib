@@ -25,9 +25,9 @@ public protocol ZoomedPdfImageSpec : OptionalImage {
   var canRequestHighResImg: Bool { get }
   var nextRenderingZoomScale: CGFloat { get }
   
-  func renderImageWithNextScale()
-  func renderFullscreenImageIfNeeded()
-  func renderImageWithScale(scale: CGFloat)
+  func renderImageWithNextScale(finishedCallback: ((Bool) -> ())?)
+  func renderFullscreenImageIfNeeded(finishedCallback: ((Bool) -> ())?)
+  func renderImageWithScale(scale: CGFloat, finishedCallback: ((Bool) -> ())?)
 }
 
 extension ZoomedPdfImageSpec{
@@ -47,8 +47,8 @@ extension ZoomedPdfImageSpec{
     }
   }
   
-  public func renderImageWithNextScale(){
-    renderImageWithScale(scale: self.nextRenderingZoomScale)
+  public func renderImageWithNextScale(finishedCallback: ((Bool) -> ())?){
+    renderImageWithScale(scale: self.nextRenderingZoomScale, finishedCallback:finishedCallback)
   }
 }
 
@@ -101,17 +101,19 @@ public class ZoomedPdfImage: OptionalImageItem, ZoomedPdfImageSpec {
     }
   }
   
-  public func renderFullscreenImageIfNeeded() {
-    self.renderImageWithScale(scale:1.0)
+  public func renderFullscreenImageIfNeeded(finishedCallback: ((Bool) -> ())?) {
+    self.renderImageWithScale(scale:1.0, finishedCallback: finishedCallback)
   }
   
-  public func renderImageWithScale(scale: CGFloat) {
+  public func renderImageWithScale(scale: CGFloat, finishedCallback: ((Bool) -> ())?) {
     //Prevent Multiple time max rendering
     if scale > ZoomedPdfImageSpecConstants.maxRenderingZoom {
       return
     }
     PdfRenderService.render(item: self,
                             width: UIScreen.main.nativeBounds.width*scale) { img in
+      finishedCallback?(img != nil)
+      //TODO THIS OR THAT!???
       onMain { [weak self] in
         guard let self = self else { return }
         guard let newImage = img else { return }
