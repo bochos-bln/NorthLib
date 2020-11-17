@@ -283,7 +283,7 @@ extension ZoomedImageView{
     guard let closure = onTapClosure else { return }
     guard let oi = self.optionalImage else { return }
     if true{//TEST 1:1
-      print("TEST 1:1 Scale")
+      print("Set 1:1 Pixel Scale current render Zoom: \((imageView.image?.size.width ?? 0)/UIScreen.main.bounds.size.width) Image width: \(imageView.image?.size.width ?? 0) CGImage Width: \(imageView.image?.cgImage?.width ?? 0)")
       self.scrollView.setZoomScale(1.0, animated: true)
     }
     closure(oi,
@@ -309,8 +309,21 @@ extension ZoomedImageView{
     }
       ///Otherwise Zoom Out in to tap loacation
     else {
+      //WARNING CANGE OF PREVIOUS BEHAVIOUR USUALLY NEEDS TO BE COVERT BY TEST!!
       let maxZoom = scrollView.maximumZoomScale
-      if maxZoom > 2 { scrollView.maximumZoomScale = 2  }
+      if let pdfImg = self.optionalImage as? ZoomedPdfImageSpec{
+        let nextZoomStep = pdfImg.nextZoomStep
+        if nextZoomStep == 1.0 {
+          scrollView.setZoomScale(scrollView.minimumZoomScale,
+                                  animated: true)
+          return
+        }
+        scrollView.maximumZoomScale = nextZoomStep
+      } else if scrollView.maximumZoomScale > 2.0 {
+        scrollView.maximumZoomScale = 2.0 
+      }
+      
+      print("double tap zoom to scrollView.maximumZoomScale: \(scrollView.maximumZoomScale)")
       let tapLocation = tapR.location(in: tapR.view)
       let newCenter = imageView.convert(tapLocation, from: scrollView)
       let zoomRect

@@ -69,9 +69,14 @@ public extension UIImage {
   /// Change Image Scale without expensive Rendering
   func screenScaled() -> UIImage {
     guard let cgi = self.cgImage else { return self }
-    return UIImage(cgImage: cgi,
+    let img = UIImage(cgImage: cgi,
                    scale: UIScreen.main.scale,
                    orientation: self.imageOrientation)
+    print("Screen scale Image:"
+            + "\n  UIImage     size: \(self.size) scale: \(self.scale)x"
+            + "\n  cgImage     size: \(cgi.width)x\(cgi.height)"
+            + "\n  new UIImage size: \(img.size) scale: \(img.scale)x")
+    return img
   }
   
 } // UIImage

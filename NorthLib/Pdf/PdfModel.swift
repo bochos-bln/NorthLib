@@ -72,7 +72,12 @@ class PdfModelItem : PdfModel/*, PDFOutlineStructure*/ {
     for pagenumber in 0...pdfDocument.pageCount-1{
       self.images.append(ZoomedPdfImage(url: url, index: pagenumber))
     }
+    
+    print("Screen Data: "
+       +   "  \nbounds:\(UIScreen.main.bounds) nativeBounds: \(UIScreen.main.nativeBounds)"
+     + "  \nscale: \(UIScreen.main.scale) nativeScale: \(UIScreen.main.nativeScale)")
 
+    /*****    No Outline Parsing Needed
     if let outline = pdfDocument.outlineRoot {
       for sectionIdx in 0...outline.numberOfChildren-1{
         if let sectionOutline = outline.child(at: sectionIdx) {
@@ -89,7 +94,7 @@ class PdfModelItem : PdfModel/*, PDFOutlineStructure*/ {
           }
         }
       }
-    }
+    }**********************************************************/
   }
   
   deinit {
@@ -97,7 +102,6 @@ class PdfModelItem : PdfModel/*, PDFOutlineStructure*/ {
   }
   
   func thumbnail(atIndex: Int, finishedClosure: ((UIImage?)->())?) -> UIImage? {
-    
     guard var pdfImg = self.item(atIndex: atIndex) else {
       return nil
     }

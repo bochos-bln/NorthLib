@@ -45,6 +45,7 @@ class PdfRenderService{
                             width: CGFloat,
                             backgroundRenderer : Bool = false,
                             finischedCallback: @escaping((UIImage?)->())){
+    print("render image with pixel width: \(width)")
     sharedInstance.enqueueRender(item: item,
                                width: width,
                                backgroundRenderer : backgroundRenderer,
@@ -110,7 +111,9 @@ extension PDFPage {
     _frame.size.height *= scale
     _frame.origin.x = 0
     _frame.origin.y = 0
-    
+    if _frame.width > 300 {
+      print("TRY TO RENDER IMAGE WITH: \(_frame.size)")
+    }
     UIGraphicsBeginImageContext(_frame.size)
     
     if let ctx = UIGraphicsGetCurrentContext() {
@@ -124,17 +127,20 @@ extension PDFPage {
     }
     
     UIGraphicsEndImageContext()
+    if _frame.width > 300 {
+      print("rendered image width: \(_frame.width) imagesize: \(img?.mbSize ?? 0) MB")
+    }
     return img
   }
   
   fileprivate func image(width: CGFloat) -> UIImage? {
     guard let frame = self.frame else { return nil }
-    return image(scale:  UIScreen.main.scale * width/frame.size.width)?.screenScaled()
+    return image(scale:  width/frame.size.width)?.screenScaled()
   }
   
   fileprivate func image(height: CGFloat) -> UIImage? {
     guard let frame = self.frame else { return nil }
-    return image(scale:  UIScreen.main.scale * height/frame.size.height)?.screenScaled()
+    return image(scale:  height/frame.size.height)?.screenScaled()
   }
   
   var frame: CGRect? { self.pageRef?.getBoxRect(.cropBox) }
