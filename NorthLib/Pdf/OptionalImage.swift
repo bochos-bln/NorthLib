@@ -9,10 +9,6 @@
 import Foundation
 import PDFKit
 
-struct ZoomedPdfImageSpecConstants {
-  static let maxRenderingZoom:CGFloat = 6.0
-}
-
 
 // MARK: - ZoomedPdfImageSpec : OptionalImage (Protocol)
 public protocol ZoomedPdfImageSpec : OptionalImage {
@@ -34,7 +30,7 @@ public protocol ZoomedPdfImageSpec : OptionalImage {
 extension ZoomedPdfImageSpec{
   public var canRequestHighResImg: Bool {
     get {
-      return nextRenderingZoomScale <= ZoomedPdfImageSpecConstants.maxRenderingZoom
+      return nextRenderingZoomScale <= PdfDisplayOptions.Page.maxRenderingZoom
     }
   }
   
@@ -67,9 +63,6 @@ public class ZoomedPdfImage: OptionalImageItem, ZoomedPdfImageSpec {
   }
   
   public override weak var image: UIImage? {
-    willSet{
-      print("ZoomedPdfImage image set at \(calculatedNextScreenZoomScale ?? 0)x")
-    }
     didSet{
       calculatedNextScreenZoomScale = nil
     }
@@ -87,7 +80,7 @@ public class ZoomedPdfImage: OptionalImageItem, ZoomedPdfImageSpec {
         case _ where currentScale <= 3.0:
           return 6.0
         default:
-          return ZoomedPdfImageSpecConstants.maxRenderingZoom
+          return PdfDisplayOptions.Page.maxRenderingZoom
       }
     }
   }
@@ -112,11 +105,11 @@ public class ZoomedPdfImage: OptionalImageItem, ZoomedPdfImageSpec {
   
   public func renderImageWithScale(scale: CGFloat, finishedCallback: ((Bool) -> ())?) {
     //Prevent Multiple time max rendering
-    if scale > ZoomedPdfImageSpecConstants.maxRenderingZoom {
+    if scale > PdfDisplayOptions.Page.maxRenderingZoom {
       return
     }
     let baseWidth = UIScreen.main.bounds.width*UIScreen.main.scale
-    print("Optional Image, render Image with scale: \(scale) is width: \(baseWidth*scale) 1:1 image width should be: \(baseWidth)")
+//    print("Optional Image, render Image with scale: \(scale) is width: \(baseWidth*scale) 1:1 image width should be: \(baseWidth)")
     PdfRenderService.render(item: self,
                             width: baseWidth*scale) { img in
       onMain { [weak self] in

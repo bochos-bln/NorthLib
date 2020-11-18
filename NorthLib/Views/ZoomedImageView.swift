@@ -283,7 +283,7 @@ extension ZoomedImageView{
     guard let closure = onTapClosure else { return }
     guard let oi = self.optionalImage else { return }
     if true{//TEST 1:1
-      print("Set 1:1 Pixel Scale current render Zoom: \((imageView.image?.size.width ?? 0)/UIScreen.main.bounds.size.width) Image width: \(imageView.image?.size.width ?? 0) CGImage Width: \(imageView.image?.cgImage?.width ?? 0)")
+      log("Set 1:1 Pixel Scale current render Zoom: \((imageView.image?.size.width ?? 0)/UIScreen.main.bounds.size.width) Image width: \(imageView.image?.size.width ?? 0) CGImage Width: \(imageView.image?.cgImage?.width ?? 0)", logLevel: .Debug)
       self.scrollView.setZoomScale(1.0, animated: true)
     }
     closure(oi,
@@ -323,7 +323,7 @@ extension ZoomedImageView{
         scrollView.maximumZoomScale = 2.0 
       }
       
-      print("double tap zoom to scrollView.maximumZoomScale: \(scrollView.maximumZoomScale)")
+      log("double tap zoom to scrollView.maximumZoomScale: \(scrollView.maximumZoomScale)", logLevel: .Debug)
       let tapLocation = tapR.location(in: tapR.view)
       let newCenter = imageView.convert(tapLocation, from: scrollView)
       let zoomRect

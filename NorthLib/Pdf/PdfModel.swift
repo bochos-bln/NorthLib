@@ -9,6 +9,17 @@
 import Foundation
 import PDFKit
 
+struct PdfDisplayOptions {
+  struct Page{
+    static let maxRenderingZoom:CGFloat = 6.0
+  }
+  struct Overview{
+    static let itemsPerRow:Int = 4
+    static let spacing:CGFloat = 12.0
+    static let totalRowSpacing = (2 * PdfDisplayOptions.Overview.spacing) + (CGFloat(itemsPerRow - 1) * spacing)
+  }
+}
+
 
 // MARK: PdfArrayModel
 protocol PdfModel {
@@ -34,12 +45,15 @@ extension PdfModel{
 }
 
 // MARK: PdfDocModel
-class PdfModelItem : PdfModel/*, PDFOutlineStructure*/ {
+class PdfModelItem : PdfModel, DoesLog/*, PDFOutlineStructure*/ {
   
   var defaultItemSize: CGSize?
   var index: Int = 0
   var count: Int = 0
   var url:URL?
+  
+  //Ip 7+ ::: ScreenScale(414 - 12*5)/4
+  let thumbWidth = UIScreen.main.scale*(UIScreen.main.bounds.size.width - PdfDisplayOptions.Overview.totalRowSpacing)/CGFloat(PdfDisplayOptions.Overview.itemsPerRow)
   
   func item(atIndex: Int) -> ZoomedPdfImageSpec? {
     return images.valueAt(atIndex) as? ZoomedPdfImage
@@ -53,8 +67,8 @@ class PdfModelItem : PdfModel/*, PDFOutlineStructure*/ {
   
   var imageSizeMb : UInt64 { get{
     var totalSize:UInt64 = 0
-    for img in self.images ?? [] {
-      print("page: \(img.pdfPageIndex) size:\(img.image?.mbSize)")
+    for img in self.images {
+      log("page: \(img.pdfPageIndex ?? -1) size:\(img.image?.mbSize ?? 0)")
       totalSize += UInt64(img.image?.mbSize ?? 0)
     }
     return totalSize
@@ -109,14 +123,16 @@ class PdfModelItem : PdfModel/*, PDFOutlineStructure*/ {
       return waitingImage
     }
     
-    
-    
     PdfRenderService.render(item: pdfImg,
-                            scale: Self.previewDeviceWithScale,
-                            backgroundRenderer: true) { img in
+                            width: thumbWidth,
+                            screenScaled: false,
+                            backgroundRenderer: true){ [weak self] img in
+      guard let self = self else { return }
+      let img = img?.scaled(self.thumbWidth/UIScreen.main.bounds.width)
       pdfImg.waitingImage = img
       finishedClosure?(img)
-      }
+    }
+        
     return nil
   }
 

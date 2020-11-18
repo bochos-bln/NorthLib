@@ -9,10 +9,11 @@
 import UIKit
 import PDFKit
 
+
 /// Service that renders PDF's on limited count of Threads,
 /// each parallel render open its own file handle
 /// to avoid memory leaks within unclosed UIGraphicsContext PDF File handles
-class PdfRenderService{
+class PdfRenderService : DoesLog{
 
   private static let sharedInstance = PdfRenderService()
   private init(){}
@@ -43,11 +44,12 @@ class PdfRenderService{
   
   public static func render(item:ZoomedPdfImageSpec,
                             width: CGFloat,
+                            screenScaled: Bool = true,
                             backgroundRenderer : Bool = false,
                             finischedCallback: @escaping((UIImage?)->())){
-    print("render image with pixel width: \(width)")
     sharedInstance.enqueueRender(item: item,
                                width: width,
+                               screenScaled: screenScaled,
                                backgroundRenderer : backgroundRenderer,
                                finischedCallback: finischedCallback)
   }
@@ -66,13 +68,14 @@ class PdfRenderService{
                              scale:CGFloat = 1.0,
                              width: CGFloat? = nil,
                              height: CGFloat? = nil,
+                             screenScaled: Bool = true,
                              backgroundRenderer : Bool = false,
                              finischedCallback: (@escaping(UIImage?)->())){
     let queue = backgroundRenderer ? backgroundQueue : userInteractiveQueue
     let semaphore = backgroundRenderer ? backgroundSemaphore : userInteractiveSemaphore
     
-    
-    queue.async {
+    queue.async { [weak self] in
+      let debugEnqueuedStart = Date()
       guard let url = item.pdfUrl else {
         finischedCallback(nil)
         return
@@ -82,12 +85,13 @@ class PdfRenderService{
         return
       }
       semaphore.wait()
+      let debugRenderStart = Date()
       let pdfPage = PDFDocument(url: url)?.page(at: index)
       ///Check if stopped meanwhile
       if let pdfPage = pdfPage, item.renderingStoped == false {
         var img : UIImage?
         if let w = width {
-          img = pdfPage.image(width: w)
+          img = pdfPage.image(width: w, screenScaled)
         }
         else if let h = height {
           img = pdfPage.image(height: h)
@@ -95,6 +99,12 @@ class PdfRenderService{
         else {
           img = pdfPage.image(scale:scale)
         }
+        self?.log("Render for PageIdx: \(item.pdfPageIndex ?? 0) done"
+              + "\n   scale: \(scale) width: \(width ?? 0) height: \(height ?? 0) screenScaled: \(screenScaled)"
+              + "\n   screenScaled: \(screenScaled) backgroundRenderer: \(backgroundRenderer)"
+              + "\n   Duration since enqueued: \(Date().timeIntervalSince(debugEnqueuedStart)) "
+              + "renderStart: \(Date().timeIntervalSince(debugRenderStart))",
+                  logLevel: .Debug)
         finischedCallback(img)
       }
       semaphore.signal()
@@ -102,7 +112,7 @@ class PdfRenderService{
   }
 }
 
-extension PDFPage {
+extension PDFPage : DoesLog {
   fileprivate func image(scale: CGFloat = 1.0) -> UIImage? {
     var img: UIImage?
     guard let ref = self.pageRef else { return nil}
@@ -112,7 +122,7 @@ extension PDFPage {
     _frame.origin.x = 0
     _frame.origin.y = 0
     if _frame.width > 300 {
-      print("TRY TO RENDER IMAGE WITH: \(_frame.size)")
+      self.log("TRY TO RENDER IMAGE WITH: \(_frame.size)", logLevel: .Debug)
     }
     
     if avoidRenderDueExpectedMemoryIssue(_frame, scale) { return nil }
@@ -133,7 +143,7 @@ extension PDFPage {
     
     UIGraphicsEndImageContext()
     if _frame.width > 300 {
-      print("rendered image width: \(_frame.width) imagesize: \(img?.mbSize ?? 0) MB")
+      log("rendered image width: \(_frame.width) imagesize: \(img?.mbSize ?? 0) MB", logLevel: .Debug)
     }
     return img
   }
@@ -157,25 +167,28 @@ extension PDFPage {
     
     //Print Debug Info
     if isProblematicSystemVersion, tooBig {
-      print("⚠️ image rendering \(scaleInfo) is expected to fail! 🛑 Do Not Render! expectedImageSize: \(expectedImageSize/(1024*1024)) MB > \(maxUseableRam/(1024*1024)) MB useable RAM")
+      self.log("⚠️ image rendering \(scaleInfo) is expected to fail! 🛑 Do Not Render! expectedImageSize: \(expectedImageSize/(1024*1024)) MB > \(maxUseableRam/(1024*1024)) MB useable RAM", logLevel: .Debug)
     }
     else if tooBig {
-      print("⚠️ image rendering \(scaleInfo) is expected to fail! expectedImageSize: \(expectedImageSize/(1024*1024)) MB > \(maxUseableRam/(1024*1024)) MB useable RAM")
+      self.log("⚠️ image rendering \(scaleInfo) is expected to fail! expectedImageSize: \(expectedImageSize/(1024*1024)) MB > \(maxUseableRam/(1024*1024)) MB useable RAM", logLevel: .Debug)
     } else {
-      print("no expecting render issues  \(scaleInfo) expectedImageSize: \(expectedImageSize/(1024*1024)) MB, \(maxUseableRam/(1024*1024)) MB useable RAM")
+      self.log("no expecting render issues  \(scaleInfo) expectedImageSize: \(expectedImageSize/(1024*1024)) MB, \(maxUseableRam/(1024*1024)) MB useable RAM", logLevel: .Debug)
     }
     return isProblematicSystemVersion && tooBig
   }
 
   
-  fileprivate func image(width: CGFloat) -> UIImage? {
+  fileprivate func image(width: CGFloat, _ screenScaled: Bool = true) -> UIImage? {
     guard let frame = self.frame else { return nil }
-    return image(scale:  width/frame.size.width)?.screenScaled()
+    if screenScaled == false {
+      return image(scale:  width/frame.size.width)
+    }
+    return image(scale:  width/frame.size.width)?.scaled()
   }
   
   fileprivate func image(height: CGFloat) -> UIImage? {
     guard let frame = self.frame else { return nil }
-    return image(scale:  height/frame.size.height)?.screenScaled()
+    return image(scale:  height/frame.size.height)?.scaled()
   }
   
   var frame: CGRect? { self.pageRef?.getBoxRect(.cropBox) }

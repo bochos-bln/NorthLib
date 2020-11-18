@@ -14,13 +14,13 @@ class PdfOverviewCollectionVC : UICollectionViewController, CanRotate{
   
   // MARK: - Properties
   private let reuseIdentifier = "pdfCell"
-  private let itemsPerRow:CGFloat = 4
-  private let spacing:CGFloat = 12.0
+  private let itemsPerRow:Int
+  private let spacing:CGFloat
   
   lazy var generellItemSize : CGSize = {
     let width = min(UIScreen.main.bounds.size.width, UIScreen.main.bounds.size.height)
-    let totalRowSpacing = (2 * self.spacing) + ((itemsPerRow - 1) * spacing)
-    let cellWidth = (width - totalRowSpacing)/itemsPerRow
+    let totalRowSpacing = PdfDisplayOptions.Overview.totalRowSpacing
+    let cellWidth = (width - totalRowSpacing)/CGFloat(itemsPerRow)
     guard let defaultItemSize = pdfModel?.defaultItemSize else { return CGSize(width: cellWidth, height: cellWidth)}
     let ratio = defaultItemSize.width / defaultItemSize.height
     return CGSize(width: cellWidth, height: cellWidth/ratio)
@@ -31,13 +31,15 @@ class PdfOverviewCollectionVC : UICollectionViewController, CanRotate{
   
   init(pdfModel: PdfModel) {//Wrong can also be pdfpage
     self.pdfModel = pdfModel
+    self.spacing = PdfDisplayOptions.Overview.spacing
     let layout = UICollectionViewFlowLayout()
-    layout.sectionInset = UIEdgeInsets(top: spacing,
-                                       left: spacing,
-                                       bottom: spacing,
-                                       right: spacing)
-    layout.minimumLineSpacing = spacing
-    layout.minimumInteritemSpacing = spacing
+    layout.sectionInset = UIEdgeInsets(top: self.spacing,
+                                       left: self.spacing,
+                                       bottom: self.spacing,
+                                       right: self.spacing)
+    layout.minimumLineSpacing = self.spacing
+    layout.minimumInteritemSpacing = self.spacing
+    self.itemsPerRow = PdfDisplayOptions.Overview.itemsPerRow
     super.init(collectionViewLayout: layout)
   }
   

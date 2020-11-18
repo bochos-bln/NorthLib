@@ -17,6 +17,7 @@ public class PdfViewController : UIViewController, CanRotate{
   
   public init() {
     guard let pdfModel = pdfModel else { fatalError("init() pdfModel is nil cannot show something usefull") }
+    Log.minLogLevel = .Debug
     thumbnailController = PdfOverviewCollectionVC(pdfModel:pdfModel)
     pageController = PdfPagesCollectionVC(data: pdfModel)
     super.init(nibName: nil, bundle: nil)
@@ -28,8 +29,7 @@ public class PdfViewController : UIViewController, CanRotate{
     })
     
     detailController.onX { [weak self] in
-      guard let self = self else { return}
-      print("All Images current Size: \(pdfModel.imageSizeMb) MB")
+      self?.log("All Images current Size: \(pdfModel.imageSizeMb) MB", logLevel: .Debug)
     }
 
     return;
