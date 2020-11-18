@@ -114,6 +114,9 @@ extension PDFPage {
     if _frame.width > 300 {
       print("TRY TO RENDER IMAGE WITH: \(_frame.size)")
     }
+    
+    if avoidRenderDueExpectedMemoryIssue(_frame, scale) { return nil }
+    
     UIGraphicsBeginImageContext(_frame.size)
     
     if let ctx = UIGraphicsGetCurrentContext() {
@@ -134,6 +137,36 @@ extension PDFPage {
     }
     return img
   }
+  
+  private func avoidRenderDueExpectedMemoryIssue(_ frame:CGRect, _ scale:CGFloat? = nil) -> Bool {
+    /// Limit to max Device RAM Usage
+    var maxPercentageRamUsage : UInt64 = 45
+    /// In CGContextRender iOS lower than 13.7 crash on low memory. Higher versions do not!
+    var isProblematicSystemVersion = false
+    
+    if #available(iOS 13.7, *) { }
+    else {
+      maxPercentageRamUsage = 30//Page 1 from 2020-11-18 kill all plans! :-(
+      isProblematicSystemVersion = true
+    }
+    
+    let expectedImageSize = Int64(frame.size.width*frame.size.height*4)
+    let maxUseableRam = Int64(maxPercentageRamUsage*ProcessInfo.processInfo.physicalMemory/100)
+    let tooBig = expectedImageSize > maxUseableRam
+    let scaleInfo = scale != nil ? " @\(Double(round(100*scale!)/100))x " : ""
+    
+    //Print Debug Info
+    if isProblematicSystemVersion, tooBig {
+      print("⚠️ image rendering \(scaleInfo) is expected to fail! 🛑 Do Not Render! expectedImageSize: \(expectedImageSize/(1024*1024)) MB > \(maxUseableRam/(1024*1024)) MB useable RAM")
+    }
+    else if tooBig {
+      print("⚠️ image rendering \(scaleInfo) is expected to fail! expectedImageSize: \(expectedImageSize/(1024*1024)) MB > \(maxUseableRam/(1024*1024)) MB useable RAM")
+    } else {
+      print("no expecting render issues  \(scaleInfo) expectedImageSize: \(expectedImageSize/(1024*1024)) MB, \(maxUseableRam/(1024*1024)) MB useable RAM")
+    }
+    return isProblematicSystemVersion && tooBig
+  }
+
   
   fileprivate func image(width: CGFloat) -> UIImage? {
     guard let frame = self.frame else { return nil }
