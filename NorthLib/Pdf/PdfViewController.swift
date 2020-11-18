@@ -9,10 +9,10 @@
 import UIKit
 
 /// Provides functionallity to interact between PdfOverviewCollectionVC and Pages with PdfPagesCollectionVC
-public class PdfViewController : UIViewController, CanRotate{
+open class PdfViewController : UIViewController, CanRotate{
   var thumbnailController : PdfOverviewCollectionVC?
-  var pageController : PdfPagesCollectionVC?
-  var overlay : Overlay?
+  public private(set) var pageController : PdfPagesCollectionVC?
+  public private(set) var overlay : Overlay?
   var pdfModel : PdfModel? = PdfModelItem(url: PdfModelHelper.demoDocUrl())
   
   public init() {
@@ -40,7 +40,7 @@ public class PdfViewController : UIViewController, CanRotate{
     }
   }
   
-  required init?(coder: NSCoder) {
+  public required init?(coder: NSCoder) {
     fatalError("init(coder:) has not been implemented")
   }
   

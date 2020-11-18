@@ -10,7 +10,7 @@ import UIKit
 
 //PagePDFVC array von pages mit Image und page
 /// Provides functionallity to view, zoom in PDF Pages. Swipe on Side Corner shows next/prev Page if available
-class PdfPagesCollectionVC : ImageCollectionVC, CanRotate{
+public class PdfPagesCollectionVC : ImageCollectionVC, CanRotate{
   
   /// Light status bar because of black background TBD at Zoom in the white Newspaper is in bg on zoom out the black bg
   /// Simple solution => white BG!
@@ -46,7 +46,7 @@ class PdfPagesCollectionVC : ImageCollectionVC, CanRotate{
   }
   
   
-  override func viewDidLoad() {
+  public override func viewDidLoad() {
     super.viewDidLoad()
     self.collectionView.backgroundColor = UIColor(white: 1.0, alpha: 0.95)//TODO::DARKMODE!
     self.pageControlMaxDotsCount = Device.singleton == .iPad ? 25 : 9
@@ -58,11 +58,11 @@ class PdfPagesCollectionVC : ImageCollectionVC, CanRotate{
     self.pageControl?.currentPageIndicatorTintColor = UIColor.magenta//Const.SetColor.CIColor.color
   }
   
-  override func didReceiveMemoryWarning() {
+  public override func didReceiveMemoryWarning() {
     print("☠️☠️☠️\nRECIVE MEMORY WARNING\n☠️☠️☠️☠️\nPdfPagesCollectionVC->didReceiveMemoryWarning\n   ")
   }
 
-  override func setupViewProvider(){
+  public override func setupViewProvider(){
     viewProvider { [weak self] (index, oview) in
       guard let self = self else { return UIView() }
       let dataItem = self.data?.item(atIndex: index)
