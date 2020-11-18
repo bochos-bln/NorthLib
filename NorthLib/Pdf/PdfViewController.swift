@@ -23,6 +23,7 @@ open class PdfViewController : UIViewController, CanRotate{
     super.init(nibName: nil, bundle: nil)
     guard let detailController = pageController else {return }
     overlay = Overlay(overlay:detailController , into: self)
+    overlay?.closeRatio = 0.8//Fix ScrollView e.g. ZoomedImageView in ScrollView close Ratio Issue
     overlay?.onRequestUpdatedCloseFrame(closure: { [weak self] in
       guard let self = self else { return nil}
       return self.thumbnailController?.frameAtIndex(index: self.pageController?.index ?? 0)
