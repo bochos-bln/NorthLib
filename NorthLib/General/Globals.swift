@@ -29,6 +29,12 @@ public func onMain(closure: @escaping ()->()) {
   else { closure() }
 }
 
+/// perform closure on own thread
+public func onThread(closure: @escaping ()->()) {
+  DispatchQueue.global().async(execute: closure)
+}
+
+
 /// returns the type name of an object as String
 public func typeName<T>(_ obj: T) -> String { return "\(type(of:obj))" }
 
