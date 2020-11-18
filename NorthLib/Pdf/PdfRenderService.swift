@@ -117,6 +117,7 @@ extension PDFPage {
     UIGraphicsBeginImageContext(_frame.size)
     
     if let ctx = UIGraphicsGetCurrentContext() {
+      ctx.saveGState()
       UIColor.white.set()
       ctx.fill(_frame)
       ctx.translateBy(x: 0.0, y: _frame.size.height)
@@ -124,6 +125,7 @@ extension PDFPage {
       ctx.scaleBy(x: scale, y: scale)
       ctx.drawPDFPage(ref)
       img = UIGraphicsGetImageFromCurrentImageContext()
+      ctx.restoreGState()
     }
     
     UIGraphicsEndImageContext()
