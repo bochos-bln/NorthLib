@@ -29,14 +29,9 @@ open class PdfViewController : UIViewController, CanRotate{
     })
     
     detailController.onX { [weak self] in
-      self?.log("All Images current Size: \(pdfModel.imageSizeMb) MB", logLevel: .Debug)
-    }
-
-    return;
-      
-    detailController.onX { [weak self] in
       guard let self = self else { return}
       self.overlay?.close(animated: true)
+      self.log("All Images current Size: \(pdfModel.imageSizeMb) MB", logLevel: .Debug)
     }
   }
   
