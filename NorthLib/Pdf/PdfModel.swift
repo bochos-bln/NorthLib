@@ -11,7 +11,7 @@ import PDFKit
 
 struct PdfDisplayOptions {
   struct Page{
-    static let maxRenderingZoom:CGFloat = 6.0
+    static let maxRenderingZoom:CGFloat = Device.singleton == .iPad ? 4.0 : 6.0
   }
   struct Overview{
     static let itemsPerRow:Int = 4

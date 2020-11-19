@@ -76,29 +76,39 @@ public class ZoomedPdfImage: OptionalImageItem, ZoomedPdfImageSpec {
   }
   
   //want screen zoom scales 1, 4, 8, 12...
+  
   var calculateNextScreenZoomScale: CGFloat {
     get{
       guard let img = self.image else { return 1.0 }
       let currentScale = img.size.width/UIScreen.main.nativeBounds.width
-      
+      #warning("TODO @Ringo MATH+KISS")
       switch currentScale {
         case _ where currentScale <= 1.0:
           return 3.0
         case _ where currentScale <= 3.0:
-          return 6.0
+          return 6.0//wrong fpr iPad!!!
         default:
           return PdfDisplayOptions.Page.maxRenderingZoom
       }
     }
   }
+  #warning("TODO @Ringo MATH+KISS")
+  /**
+  iPad need other zoom steps
+   iPad 1x 2x 4/5x
+   iPhone 1x 3x 6x
   
+  
+   */
   ///returns the next zoom step ratio from current zoom step e.g. for scrollview to calculate how deep to zoom
   public var nextZoomStep: CGFloat {
     get {
       ///Usually a ratio between current and next but issues with division by 0 and expensive cals use simple switch
       /// Expect 3,6,max == 8
       if nextRenderingZoomScale == 3.0 { return 3.0 }
-      else if nextRenderingZoomScale == 6.0 { return 8/6 }
+      else if nextRenderingZoomScale == PdfDisplayOptions.Page.maxRenderingZoom {
+        return PdfDisplayOptions.Page.maxRenderingZoom/3.0
+      }
       return 2.0
     }
   }
