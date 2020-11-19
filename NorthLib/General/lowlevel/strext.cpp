@@ -932,7 +932,7 @@ char *str_reverse(char *str) {
  *       tab               :   \t
  *       formfeed          :   \f
  *       vertical tab      :   \v
- *       alert             :   \a
+ *       alert             :   \ a '\a' command does not have a valid word argument
  *
  *  Additionally the newly generated string is surrounded by
  *  quotes (").
