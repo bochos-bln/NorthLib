@@ -51,15 +51,18 @@ public class PdfOverviewCollectionVC : UICollectionViewController, CanRotate{
   
   public override func viewDidLoad() {
     super.viewDidLoad()
-    self.view.backgroundColor = .yellow
     collectionView!.showsVerticalScrollIndicator = false
     collectionView!.showsHorizontalScrollIndicator = false
-    
     // Register cell classes
     collectionView!.register(PdfOverviewCvcCell.self, forCellWithReuseIdentifier: reuseIdentifier)
-    
+    if let cv = self.collectionView, let cvsv = cv.superview {
+      pin(cv.bottom, to: cvsv.bottom)
+      pin(cv.top, to: cvsv.topGuide())
+      pin(cv.left, to: cvsv.left)
+      pin(cv.right, to: cvsv.right)
+    }
   }
-  
+    
   // MARK: UICollectionViewDataSource
   public override func numberOfSections(in collectionView: UICollectionView) -> Int {
     // #warning Incomplete implementation, return the number of sections

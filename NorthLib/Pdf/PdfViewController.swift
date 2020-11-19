@@ -15,6 +15,15 @@ open class PdfViewController : UIViewController, CanRotate{
   public private(set) var overlay : Overlay?
   var pdfModel : PdfModel? = PdfModelItem(url: PdfModelHelper.demoDocUrl())
   
+  ///Difficult decission
+  /// Light status bar because of black background TBD at Zoom in the white Newspaper is in bg on zoom out the black bg
+  /// Simple solution => white BG!
+  ///  darkmode lightMode depending
+  override public var preferredStatusBarStyle: UIStatusBarStyle {
+    return .lightContent
+  }
+    
+  
   public init() {
     guard let pdfModel = pdfModel else { fatalError("init() pdfModel is nil cannot show something usefull") }
     Log.minLogLevel = .Debug

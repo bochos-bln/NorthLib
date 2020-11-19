@@ -12,19 +12,14 @@ import UIKit
 /// Provides functionallity to view, zoom in PDF Pages. Swipe on Side Corner shows next/prev Page if available
 public class PdfPagesCollectionVC : ImageCollectionVC, CanRotate{
   
-  /// Light status bar because of black background TBD at Zoom in the white Newspaper is in bg on zoom out the black bg
-  /// Simple solution => white BG!
-  ///  darkmode lightMode depending
-  override public var preferredStatusBarStyle: UIStatusBarStyle { .lightContent }
-  
   public var menuItems: [(title: String, icon: String, closure: (String)->())] = [] {
     didSet {
       var newItems = menuItems
-      newItems += (title: "Zoom 1:1", icon: "1.magnifyingglass", closure: { [weak self] _ in
+      newItems.insert((title: "Zoom 1:1", icon: "1.magnifyingglass", closure: { [weak self] _ in
         if let ziv = self?.currentView as? ZoomedImageView  {
           ziv.scrollView.setZoomScale(1.0, animated: true)
         }
-      })
+      }), at: 0)
       menu.menu = newItems
     }
   }
@@ -48,7 +43,6 @@ public class PdfPagesCollectionVC : ImageCollectionVC, CanRotate{
     self.pdfModel = data
     super.init()
     updateData()
-    
   }
   
   required init?(coder: NSCoder) {
@@ -65,7 +59,8 @@ public class PdfPagesCollectionVC : ImageCollectionVC, CanRotate{
     self.pageControl?.layer.shadowOffset = CGSize(width: 0, height: 0)
     self.pageControl?.layer.shadowOpacity = 1.0
     self.pageControl?.pageIndicatorTintColor = UIColor.white
-    self.pageControl?.currentPageIndicatorTintColor = UIColor.magenta//Const.SetColor.CIColor.color
+    self.pageControl?.currentPageIndicatorTintColor = UIColor.red//Const.SetColor.CIColor.color
+    self.pinBottomToSafeArea = false
   }
   
   public override func didReceiveMemoryWarning() {
