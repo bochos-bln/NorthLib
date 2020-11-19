@@ -35,33 +35,33 @@ class PdfRenderService : DoesLog{
   public static func render(item:ZoomedPdfImageSpec,
                             scale:CGFloat = 1.0,
                             backgroundRenderer : Bool = false,
-                            finischedCallback: @escaping((UIImage?)->())){
+                            finishedCallback: @escaping((UIImage?)->())){
     sharedInstance.enqueueRender(item: item,
                                scale: scale,
                                backgroundRenderer : backgroundRenderer,
-                               finischedCallback: finischedCallback)
+                               finishedCallback: finishedCallback)
   }
   
   public static func render(item:ZoomedPdfImageSpec,
                             width: CGFloat,
                             screenScaled: Bool = true,
                             backgroundRenderer : Bool = false,
-                            finischedCallback: @escaping((UIImage?)->())){
+                            finishedCallback: @escaping((UIImage?)->())){
     sharedInstance.enqueueRender(item: item,
                                width: width,
                                screenScaled: screenScaled,
                                backgroundRenderer : backgroundRenderer,
-                               finischedCallback: finischedCallback)
+                               finishedCallback: finishedCallback)
   }
   
   public static func render(item:ZoomedPdfImageSpec,
                             height: CGFloat,
                             backgroundRenderer : Bool = false,
-                            finischedCallback: @escaping((UIImage?)->())){
+                            finishedCallback: @escaping((UIImage?)->())){
     sharedInstance.enqueueRender(item: item,
                                height: height,
                                backgroundRenderer : backgroundRenderer,
-                               finischedCallback: finischedCallback)
+                               finishedCallback: finishedCallback)
   }
   
   private func enqueueRender(item:ZoomedPdfImageSpec,
@@ -70,18 +70,18 @@ class PdfRenderService : DoesLog{
                              height: CGFloat? = nil,
                              screenScaled: Bool = true,
                              backgroundRenderer : Bool = false,
-                             finischedCallback: (@escaping(UIImage?)->())){
+                             finishedCallback: (@escaping(UIImage?)->())){
     let queue = backgroundRenderer ? backgroundQueue : userInteractiveQueue
     let semaphore = backgroundRenderer ? backgroundSemaphore : userInteractiveSemaphore
     
     queue.async { [weak self] in
       let debugEnqueuedStart = Date()
       guard let url = item.pdfUrl else {
-        finischedCallback(nil)
+        finishedCallback(nil)
         return
       }
       guard let index = item.pdfPageIndex else{
-        finischedCallback(nil)
+        finishedCallback(nil)
         return
       }
       semaphore.wait()
@@ -105,7 +105,7 @@ class PdfRenderService : DoesLog{
               + "\n   Duration since enqueued: \(Date().timeIntervalSince(debugEnqueuedStart)) "
               + "renderStart: \(Date().timeIntervalSince(debugRenderStart))",
                   logLevel: .Debug)
-        finischedCallback(img)
+        finishedCallback(img)
       }
       semaphore.signal()
     }
