@@ -36,11 +36,6 @@ open class PdfViewController : UIViewController, CanRotate{
     }
   }
   
-  #warning ("@Ringo: Memory Leaks fixed remove unused Code @20-11-19")
-  deinit {
-//    print("SUCCESSFULL DEINIT PdfViewController")
-  }
-  
   public required init?(coder: NSCoder) {
     fatalError("init(coder:) has not been implemented")
   }

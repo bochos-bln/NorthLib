@@ -49,11 +49,6 @@ public class PdfOverviewCollectionVC : UICollectionViewController, CanRotate{
     fatalError("init(coder:) has not been implemented")
   }
   
-  #warning ("@Ringo: memory Leaks fixed - remove @20-11-19")
-  deinit {
-//    print("SUCCESSFULL DEINIT PdfOverviewCollectionVC")
-  }
-  
   public override func viewDidLoad() {
     super.viewDidLoad()
     self.view.backgroundColor = .yellow

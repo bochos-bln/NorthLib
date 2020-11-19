@@ -32,11 +32,6 @@ public class PdfPagesCollectionVC : ImageCollectionVC, CanRotate{
     self.collectionView?.reloadData()
   }
   
-  #warning ("@Ringo: Memory Leaks fixed remove unused Code @20-11-19")
-  deinit {
-//    print("SUCCESSFULL DEINIT PdfPagesCollectionVC")
-  }
-  
   init(data:PdfModel) {
     self.pdfModel = data
     super.init()

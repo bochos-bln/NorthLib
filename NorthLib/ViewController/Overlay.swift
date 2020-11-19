@@ -48,11 +48,6 @@ public class Overlay: NSObject, OverlaySpec, UIGestureRecognizerDelegate {
   private var updatedCloseFrame : (() -> (CGRect?))?
   private var onCloseHandler: (() -> ())?
   
-  #warning ("@Ringo: Memory Leaks fixed remove unused Code @20-11-19")
-  deinit {
-    //    print("SUCCESSFULL DEINIT Overlay")
-  }
-  
   var shadeView: UIView?
   var overlayVC: UIViewController
   var activeVC: UIViewController

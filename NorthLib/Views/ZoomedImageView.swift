@@ -29,11 +29,6 @@ extension OptionalImage {
 /// Reference Implementation
 open class OptionalImageItem: OptionalImage{
   
-  #warning ("@Ringo: Memory Leaks fixed remove unused Code @20-11-19")
-  deinit {
-//    print("deinit OptionalImageItem works 20-11-19 TODO REMOVE UNUSED")
-  }
-  
   private var availableClosure: (()->())?
   fileprivate var onUpdatingClosureClosure: (()->())? = nil
   fileprivate var zoomFactorForRequestingHigherResImage : CGFloat = 1.1
@@ -65,11 +60,6 @@ open class ZoomedImageView: UIView, ZoomedImageViewSpec {
   var imageViewTopConstraint: NSLayoutConstraint?
   var imageViewTrailingConstraint: NSLayoutConstraint?
   var layoutInitialized = false
-  
-  #warning ("@Ringo: Memory Leaks fixed remove unused Code @20-11-19")
-  deinit {
-//    print("deinit ZoomedImageView")
-  }
   
   open override func willMove(toSuperview newSuperview: UIView?) {
     if newSuperview == nil {

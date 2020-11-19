@@ -87,7 +87,7 @@ class PdfModelItem : PdfModel, DoesLog/*, PDFOutlineStructure*/ {
       self.images.append(ZoomedPdfImage(url: url, index: pagenumber))
     }
     
-    print("Screen Data: "
+    log("Screen Data: "
        +   "  \nbounds:\(UIScreen.main.bounds) nativeBounds: \(UIScreen.main.nativeBounds)"
      + "  \nscale: \(UIScreen.main.scale) nativeScale: \(UIScreen.main.nativeScale)")
 
@@ -109,11 +109,6 @@ class PdfModelItem : PdfModel, DoesLog/*, PDFOutlineStructure*/ {
         }
       }
     }**********************************************************/
-  }
-  
-  #warning ("@Ringo: Memory Leaks fixed remove unused Code @20-11-19")
-  deinit {
-//    print("SUCCESSFULL DEINIT PdfDocModel")
   }
   
   func thumbnail(atIndex: Int, finishedClosure: ((UIImage?)->())?) -> UIImage? {
