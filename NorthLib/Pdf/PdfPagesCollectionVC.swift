@@ -17,8 +17,20 @@ public class PdfPagesCollectionVC : ImageCollectionVC, CanRotate{
   ///  darkmode lightMode depending
   override public var preferredStatusBarStyle: UIStatusBarStyle { .lightContent }
   
-  public lazy var menu = ContextMenu(view: view)
+  public var menuItems: [(title: String, icon: String, closure: (String)->())] = [] {
+    didSet {
+      var newItems = menuItems
+      newItems += (title: "Zoom 1:1", icon: "1.magnifyingglass", closure: { [weak self] _ in
+        if let ziv = self?.currentView as? ZoomedImageView  {
+          ziv.scrollView.setZoomScale(1.0, animated: true)
+        }
+      })
+      menu.menu = newItems
+    }
+  }
   
+  lazy var menu = ContextMenu(view: view)
+    
   var pdfModel : PdfModel? {
     didSet{
       updateData()
