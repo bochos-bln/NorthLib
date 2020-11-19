@@ -75,7 +75,7 @@ public class ZoomedPdfImage: OptionalImageItem, ZoomedPdfImageSpec {
     }
   }
   
-  //want screen zoom scales 1, 4, 8, 12... for render
+  //want screen zoom scales 1, 4, 8, 12...
   var calculateNextScreenZoomScale: CGFloat {
     get{
       guard let img = self.image else { return 1.0 }
@@ -83,9 +83,9 @@ public class ZoomedPdfImage: OptionalImageItem, ZoomedPdfImageSpec {
       
       switch currentScale {
         case _ where currentScale <= 1.0:
-          return 2.0
+          return 3.0
         case _ where currentScale <= 3.0:
-          return 5.0
+          return 6.0
         default:
           return PdfDisplayOptions.Page.maxRenderingZoom
       }
@@ -97,9 +97,9 @@ public class ZoomedPdfImage: OptionalImageItem, ZoomedPdfImageSpec {
     get {
       ///Usually a ratio between current and next but issues with division by 0 and expensive cals use simple switch
       /// Expect 3,6,max == 8
-      if nextRenderingZoomScale == 2.0 { return 2.0 }//from 1 to 2
-      else if nextRenderingZoomScale == 5.0 { return 5/2 }
-      return 2.0 //if its over just allow double zoom to pix, may use UIScreen.main.scale
+      if nextRenderingZoomScale == 3.0 { return 3.0 }
+      else if nextRenderingZoomScale == 6.0 { return 8/6 }
+      return 2.0
     }
   }
   
