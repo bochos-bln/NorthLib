@@ -66,15 +66,26 @@ open class Alert {
 
   /// Presents an action sheet with a number of buttons
   public static func actionSheet(title: String? = nil, message: String? = nil, 
-                                 actions: [UIAlertAction])  {
+                                 actions: [UIAlertAction], completion : (()->())? = nil)  {
     onMain {
       var msg: String? = nil
       if let message = message { msg = "\n\(message)" }
-      let alert = UIAlertController(title: title, message: msg, preferredStyle: .actionSheet)
+      //Use Alert on iPad due provide popoverPresentationControllers Source view is unknown
+      let style : UIAlertController.Style = Device.singleton == .iPad ? .alert : .actionSheet
+      let alert = MyAlertController(title: title, message: msg, preferredStyle: style)
       let cancelButton = UIAlertAction(title: "Abbrechen", style: .cancel)
+      alert.dismissHandler = completion
       for a in actions { alert.addAction(a) }
       alert.addAction(cancelButton)
       UIViewController.top()?.present(alert, animated: true, completion: nil)    
+    }
+  }
+  
+  class MyAlertController : UIAlertController {
+    var dismissHandler : (()->())?
+    override func viewDidDisappear(_ animated: Bool) {
+      dismissHandler?()
+      super.viewDidDisappear(animated)
     }
   }
 
