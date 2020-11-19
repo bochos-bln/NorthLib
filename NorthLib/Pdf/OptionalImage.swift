@@ -92,6 +92,7 @@ public class ZoomedPdfImage: OptionalImageItem, ZoomedPdfImageSpec {
     }
   }
   
+  ///returns the next zoom step ratio from current zoom step e.g. for scrollview to calculate how deep to zoom
   public var nextZoomStep: CGFloat {
     get {
       ///Usually a ratio between current and next but issues with division by 0 and expensive cals use simple switch
