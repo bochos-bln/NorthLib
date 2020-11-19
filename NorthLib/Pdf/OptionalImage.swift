@@ -11,7 +11,7 @@ import PDFKit
 
 
 // MARK: - ZoomedPdfImageSpec : OptionalImage (Protocol)
-public protocol ZoomedPdfImageSpec : OptionalImage {
+public protocol ZoomedPdfImageSpec : OptionalImage, DoesLog {
   var sectionTitle: String? { get set}
   var pageTitle: String? { get set}
   var pdfUrl: URL? { get }
@@ -30,11 +30,13 @@ public protocol ZoomedPdfImageSpec : OptionalImage {
 extension ZoomedPdfImageSpec{
   public var canRequestHighResImg: Bool {
     get {
+      log("canRequestHighResImg: \(nextRenderingZoomScale <= PdfDisplayOptions.Page.maxRenderingZoom) nextRenderingZoomScale \(nextRenderingZoomScale) <= \(PdfDisplayOptions.Page.maxRenderingZoom) PdfDisplayOptions.Page.maxRenderingZoom")
       return nextRenderingZoomScale <= PdfDisplayOptions.Page.maxRenderingZoom
     }
   }
   
   public func renderImageWithNextScale(finishedCallback: ((Bool) -> ())?){
+    log("Optional Image, renderImageWithNextScale: \(self.nextRenderingZoomScale) current:\((image?.size.width ?? 0)/UIScreen.main.nativeBounds.width) nextRenderingZoomScale: \(nextRenderingZoomScale)")
     renderImageWithScale(scale: self.nextRenderingZoomScale, finishedCallback:finishedCallback)
   }
 }
@@ -109,11 +111,12 @@ public class ZoomedPdfImage: OptionalImageItem, ZoomedPdfImageSpec {
       return
     }
     let baseWidth = UIScreen.main.bounds.width*UIScreen.main.scale
-//    print("Optional Image, render Image with scale: \(scale) is width: \(baseWidth*scale) 1:1 image width should be: \(baseWidth)")
+    log("Optional Image, render Image with scale: \(scale) is width: \(baseWidth*scale) 1:1 image width should be: \(baseWidth)")
     PdfRenderService.render(item: self,
                             width: baseWidth*scale) { img in
       onMain { [weak self] in
         guard let self = self else { return }
+        self.log("Optional Image, render Image with scale done rendered?: \(img != nil)")
         guard let newImage = img else { finishedCallback?(false); return }
         if self.renderingStoped { return }
         self.image = newImage
