@@ -52,7 +52,8 @@ public class PdfPagesCollectionVC : ImageCollectionVC, CanRotate{
   
   public override func viewDidLoad() {
     super.viewDidLoad()
-    self.collectionView?.backgroundColor = UIColor(white: 1.0, alpha: 0.95)//TODO::DARKMODE!
+    #warning("TODO @Ringo on Menu appear white bg appears, set .clear did not work @NThies Ideas? in Caroussel this did not appear!")
+    self.collectionView?.backgroundColor = .clear//UIColor(white: 1.0, alpha: 0.95)//TODO::DARKMODE!
     self.pageControlMaxDotsCount = Device.singleton == .iPad ? 25 : 9
     self.pageControl?.layer.shadowColor = UIColor.lightGray.cgColor
     self.pageControl?.layer.shadowRadius = 3.0
@@ -78,6 +79,8 @@ public class PdfPagesCollectionVC : ImageCollectionVC, CanRotate{
       }
       else {
         let ziv = ZoomedImageView(optionalImage: dataItem)
+        ziv.backgroundColor = .clear
+        ziv.scrollView.backgroundColor = .clear //.red/black work .clear not WTF
         ziv.onTap { [weak self] (oimg, x, y) in
           guard let self = self else { return }
           self.zoomedImageViewTapped(oimg, x, y)
