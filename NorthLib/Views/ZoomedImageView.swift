@@ -292,9 +292,27 @@ extension ZoomedImageView{
       self.layoutIfNeeded()
       return
     }
+    
+    //Multi Cases to switch between full page and 1:1 view
+    var doZoomOut = false
+    
+    if self.highResImgRequested == true {
+      doZoomOut = true
+    }
+    else if scrollView.zoomScale == scrollView.maximumZoomScale {
+      doZoomOut = true
+    }
+    else if scrollView.zoomScale >= 2 {
+      doZoomOut = true
+    }
+    else if let pdfi = optionalImage as? ZoomedPdfImage,
+       pdfi.preventNextRenderingDueFailed,
+       scrollView.zoomScale >= 1.0 {
+      doZoomOut = true
+    }
+    
     ///Zoom Out if current zoom is maximum zoom
-    if scrollView.zoomScale == scrollView.maximumZoomScale
-      || scrollView.zoomScale >= 2 {
+    if doZoomOut{
       scrollView.setZoomScale(scrollView.minimumZoomScale,
                               animated: true)
     }
@@ -399,6 +417,9 @@ extension ZoomedImageView: UIScrollViewDelegate{
       closure(_optionalImage, { success in
         if success, let img = _optionalImage.image {
           self.updateImagewithHighResImage(img)
+        } else {
+          self.scrollView.maximumZoomScale = 1.0
+          self.scrollView.setZoomScale(1.0, animated: true)
         }
         self.highResImgRequested = false
       })

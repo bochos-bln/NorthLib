@@ -17,6 +17,7 @@ public protocol ZoomedPdfImageSpec : OptionalImage, DoesLog {
   var pdfUrl: URL? { get }
   var pdfPageIndex: Int? { get }
   var renderingStoped: Bool { get }
+  var preventNextRenderingDueFailed: Bool { get }
   var nextZoomStep: CGFloat { get }
   
   var canRequestHighResImg: Bool { get }
@@ -30,6 +31,7 @@ public protocol ZoomedPdfImageSpec : OptionalImage, DoesLog {
 extension ZoomedPdfImageSpec{
   public var canRequestHighResImg: Bool {
     get {
+      if preventNextRenderingDueFailed { return false }
       log("canRequestHighResImg: \(nextRenderingZoomScale <= PdfDisplayOptions.Page.maxRenderingZoom) nextRenderingZoomScale \(nextRenderingZoomScale) <= \(PdfDisplayOptions.Page.maxRenderingZoom) PdfDisplayOptions.Page.maxRenderingZoom")
       return nextRenderingZoomScale <= PdfDisplayOptions.Page.maxRenderingZoom
     }
@@ -42,6 +44,8 @@ extension ZoomedPdfImageSpec{
 }
 
 public class ZoomedPdfImage: OptionalImageItem, ZoomedPdfImageSpec {
+  public var preventNextRenderingDueFailed: Bool = false
+  
   public var sectionTitle: String?
   public var pageTitle: String?
   public private(set) var pdfUrl: URL?
@@ -67,6 +71,7 @@ public class ZoomedPdfImage: OptionalImageItem, ZoomedPdfImageSpec {
   public override weak var image: UIImage? {
     didSet{
       calculatedNextScreenZoomScale = nil
+      preventNextRenderingDueFailed = false
     }
   }
   
@@ -117,6 +122,7 @@ public class ZoomedPdfImage: OptionalImageItem, ZoomedPdfImageSpec {
       onMain { [weak self] in
         guard let self = self else { return }
         self.log("Optional Image, render Image with scale done rendered?: \(img != nil)")
+        self.preventNextRenderingDueFailed = img == nil
         guard let newImage = img else { finishedCallback?(false); return }
         if self.renderingStoped { return }
         self.image = newImage
