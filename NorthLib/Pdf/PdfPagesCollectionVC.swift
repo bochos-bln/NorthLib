@@ -17,25 +17,28 @@ public class PdfPagesCollectionVC : ImageCollectionVC, CanRotate{
   ///  darkmode lightMode depending
   override public var preferredStatusBarStyle: UIStatusBarStyle { .lightContent }
   
-  var data : PdfModel? {
+  public lazy var menu = ContextMenu(view: view)
+  
+  var pdfModel : PdfModel? {
     didSet{
       updateData()
     }
   }
   
   func updateData(){
-    guard let model = data else { return }
+    guard let model = pdfModel else { return }
     self.index = model.index
     super.count = model.count
-    self.collectionView.reloadData()
+    self.collectionView?.reloadData()
   }
   
+  #warning ("@Ringo: Memory Leaks fixed remove unused Code @20-11-19")
   deinit {
-    print("SUCCESSFULL DEINIT PdfPagesCollectionVC")
+//    print("SUCCESSFULL DEINIT PdfPagesCollectionVC")
   }
   
   init(data:PdfModel) {
-    self.data = data
+    self.pdfModel = data
     super.init()
     updateData()
     
@@ -48,7 +51,7 @@ public class PdfPagesCollectionVC : ImageCollectionVC, CanRotate{
   
   public override func viewDidLoad() {
     super.viewDidLoad()
-    self.collectionView.backgroundColor = UIColor(white: 1.0, alpha: 0.95)//TODO::DARKMODE!
+    self.collectionView?.backgroundColor = UIColor(white: 1.0, alpha: 0.95)//TODO::DARKMODE!
     self.pageControlMaxDotsCount = Device.singleton == .iPad ? 25 : 9
     self.pageControl?.layer.shadowColor = UIColor.lightGray.cgColor
     self.pageControl?.layer.shadowRadius = 3.0
@@ -65,7 +68,7 @@ public class PdfPagesCollectionVC : ImageCollectionVC, CanRotate{
   public override func setupViewProvider(){
     viewProvider { [weak self] (index, oview) in
       guard let self = self else { return UIView() }
-      let dataItem = self.data?.item(atIndex: index)
+      let dataItem = self.pdfModel?.item(atIndex: index)
       if let ziv = oview as? ZoomedImageView {
         ziv.optionalImage = dataItem
         dataItem?.renderFullscreenImageIfNeeded(finishedCallback: nil)

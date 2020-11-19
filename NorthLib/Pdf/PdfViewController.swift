@@ -10,7 +10,7 @@ import UIKit
 
 /// Provides functionallity to interact between PdfOverviewCollectionVC and Pages with PdfPagesCollectionVC
 open class PdfViewController : UIViewController, CanRotate{
-  var thumbnailController : PdfOverviewCollectionVC?
+  public private(set) var thumbnailController : PdfOverviewCollectionVC?
   public private(set) var pageController : PdfPagesCollectionVC?
   public private(set) var overlay : Overlay?
   var pdfModel : PdfModel? = PdfModelItem(url: PdfModelHelper.demoDocUrl())
@@ -36,25 +36,50 @@ open class PdfViewController : UIViewController, CanRotate{
     }
   }
   
+  #warning ("@Ringo: Memory Leaks fixed remove unused Code @20-11-19")
+  deinit {
+//    print("SUCCESSFULL DEINIT PdfViewController")
+  }
+  
   public required init?(coder: NSCoder) {
     fatalError("init(coder:) has not been implemented")
   }
   
-  public override func viewDidLoad() {
+  open override func viewWillDisappear(_ animated: Bool) {
+    super.viewWillDisappear(animated)
+    if isBeingDismissed {
+      print("cleanup")
+      ///Cleanup
+      for ctrl in self.children {
+        ctrl.removeFromParent()
+      }
+      pageController?.menu.menu = []
+      pageController?.onX {}
+      pageController?.pdfModel = nil
+      pageController?.images = []
+      pageController?.collectionView = nil
+      thumbnailController?.clickCallback = nil
+      thumbnailController?.pdfModel = nil
+      thumbnailController = nil
+      overlay?.onRequestUpdatedCloseFrame(closure: nil)
+      pageController = nil
+      overlay = nil
+      pdfModel = nil
+    }
+  }
+  
+  open override func viewDidLoad() {
     super.viewDidLoad()
     guard let thumbnailController = thumbnailController else {return }
     thumbnailController.clickCallback = { [weak self] (sourceFrame, pdfModel) in
       guard let self = self else { return }
       guard let overlay = self.overlay else { return }
-      self.pageController?.data = pdfModel
+      self.pageController?.pdfModel = pdfModel
       overlay.openAnimated(fromFrame: sourceFrame, toFrame: self.pageController?.view.frame ?? CGRect.zero)
     }
     
-    self.addChild(thumbnailController)
     self.view.addSubview(thumbnailController.view)
     pin(thumbnailController.view, to: self.view)
-    thumbnailController.didMove(toParent: self)
-
     
     self.overlay?.maxAlpha = 0.9
     self.overlay?.open(animated: false, fromBottom: false)

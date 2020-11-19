@@ -10,7 +10,9 @@ import UIKit
 
 /// Provides tile Overview either of various PDF Files or of various Pages of one PDF File
 //may work just with IMages and delegate handles what hapen on tap
-class PdfOverviewCollectionVC : UICollectionViewController, CanRotate{
+public class PdfOverviewCollectionVC : UICollectionViewController, CanRotate{
+  
+  public lazy var menu = ContextMenu(view: view)
   
   // MARK: - Properties
   private let reuseIdentifier = "pdfCell"
@@ -47,7 +49,12 @@ class PdfOverviewCollectionVC : UICollectionViewController, CanRotate{
     fatalError("init(coder:) has not been implemented")
   }
   
-  override func viewDidLoad() {
+  #warning ("@Ringo: memory Leaks fixed - remove @20-11-19")
+  deinit {
+//    print("SUCCESSFULL DEINIT PdfOverviewCollectionVC")
+  }
+  
+  public override func viewDidLoad() {
     super.viewDidLoad()
     self.view.backgroundColor = .yellow
     collectionView!.showsVerticalScrollIndicator = false
@@ -59,16 +66,16 @@ class PdfOverviewCollectionVC : UICollectionViewController, CanRotate{
   }
   
   // MARK: UICollectionViewDataSource
-  override func numberOfSections(in collectionView: UICollectionView) -> Int {
+  public override func numberOfSections(in collectionView: UICollectionView) -> Int {
     // #warning Incomplete implementation, return the number of sections
     return 1
   }
   
-  override func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
+  public override func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
     return pdfModel?.count ?? 0
   }
   
-  override func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
+  public override func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
     let _cell = collectionView.dequeueReusableCell(withReuseIdentifier: reuseIdentifier, for: indexPath)
     guard let cell = _cell as? PdfOverviewCvcCell else { return _cell }
     if let pdfModel = self.pdfModel {
@@ -81,7 +88,7 @@ class PdfOverviewCollectionVC : UICollectionViewController, CanRotate{
     return cell
   }
   
-  override func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+  public override func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
     //Did not work if cell has label with Outline description!
     let attributes = collectionView.layoutAttributesForItem(at: indexPath)
     var sourceFrame = CGRect.zero
@@ -113,7 +120,7 @@ class PdfOverviewCollectionVC : UICollectionViewController, CanRotate{
 
 // MARK: - UICollectionViewDelegateFlowLayout
 extension PdfOverviewCollectionVC: UICollectionViewDelegateFlowLayout {
-  func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
+  public func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
     return self.generellItemSize
   }
 }

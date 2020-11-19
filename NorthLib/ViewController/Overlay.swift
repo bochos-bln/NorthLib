@@ -48,8 +48,9 @@ public class Overlay: NSObject, OverlaySpec, UIGestureRecognizerDelegate {
   private var updatedCloseFrame : (() -> (CGRect?))?
   private var onCloseHandler: (() -> ())?
   
+  #warning ("@Ringo: Memory Leaks fixed remove unused Code @20-11-19")
   deinit {
-    print("deinit Overlay")
+    //    print("SUCCESSFULL DEINIT Overlay")
   }
   
   var shadeView: UIView?
@@ -623,7 +624,7 @@ extension ImageCollectionVC : OverlayChildViewTransfer{
   /// add and Layout to Child Views
   public func addToOverlayContainer(_ container:UIView?){
     guard let container = container else { return }
-    self.collectionView.backgroundColor = .clear
+    self.collectionView?.backgroundColor = .clear
     container.addSubview(xButton)
     pin(xButton.right, to: container.rightGuide(), dist: -15)
     pin(xButton.top, to: container.topGuide(), dist: 15)

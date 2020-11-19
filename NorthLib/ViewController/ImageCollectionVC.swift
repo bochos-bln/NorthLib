@@ -40,15 +40,16 @@ open class ImageCollectionVC: PageCollectionVC, ImageCollectionVCSpec {
     setupPageControl()
     setupViewProvider()
     xButton.isHidden = false
-    xButton.onPress {_ in
-      if let closure = self.onXClosure {
+    xButton.onPress {[weak self] _ in
+      if let closure = self?.onXClosure {
         closure()
       }
       else {
-        self.defaultOnXHandler()
+        self?.defaultOnXHandler()
       }
     }
-    onDisplay { (idx, oview) in
+    onDisplay { [weak self]  (idx, oview) in
+      guard let self = self else { return }
       ///Apply PageControll Dots Update
       guard let pageControl = self.pageControl else { return }
       if self.pageControlMaxDotsCount > 0, self.count > 0,
@@ -63,14 +64,14 @@ open class ImageCollectionVC: PageCollectionVC, ImageCollectionVCSpec {
       }
     }
     //initially render CollectionView
-    self.collectionView.reloadData()
+    self.collectionView?.reloadData()
   }
   
   // MARK: Layout
   open override func viewDidLayoutSubviews() {
     super.viewDidLayoutSubviews()
     if let iPath = scrollToIndexPathAfterLayoutSubviews {
-      collectionView.scrollToItem(at: iPath, at: .centeredHorizontally, animated: false)
+      collectionView?.scrollToItem(at: iPath, at: .centeredHorizontally, animated: false)
       scrollToIndexPathAfterLayoutSubviews = nil
     }
   }
@@ -83,12 +84,12 @@ open class ImageCollectionVC: PageCollectionVC, ImageCollectionVCSpec {
      minus the section insets top and bottom values,
      minus the content insets top and bottom values.
      */
-    collectionView.collectionViewLayout.invalidateLayout()
+    collectionView?.collectionViewLayout.invalidateLayout()
   }
   
   open override func viewWillTransition(to size: CGSize, with coordinator: UIViewControllerTransitionCoordinator) {
     super.viewWillTransition(to: size, with: coordinator)
-    scrollToIndexPathAfterLayoutSubviews = collectionView.indexPathsForVisibleItems.first
+    scrollToIndexPathAfterLayoutSubviews = collectionView?.indexPathsForVisibleItems.first
   }
   
   open func setupViewProvider(){
@@ -135,9 +136,9 @@ extension ImageCollectionVC {
 // MARK: - Helper
 extension ImageCollectionVC {
   func prepareCollectionView() {
-    self.collectionView.backgroundColor = UIColor.black
-    self.collectionView.showsHorizontalScrollIndicator = false
-    self.collectionView.showsVerticalScrollIndicator = false
+    self.collectionView?.backgroundColor = UIColor.black
+    self.collectionView?.showsHorizontalScrollIndicator = false
+    self.collectionView?.showsVerticalScrollIndicator = false
     self.pinTopToSafeArea = false
     self.pinBottomToSafeArea = false
   }

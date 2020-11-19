@@ -111,8 +111,9 @@ class PdfModelItem : PdfModel, DoesLog/*, PDFOutlineStructure*/ {
     }**********************************************************/
   }
   
+  #warning ("@Ringo: Memory Leaks fixed remove unused Code @20-11-19")
   deinit {
-    print("********  PdfDocModel deinit  ********")
+//    print("SUCCESSFULL DEINIT PdfDocModel")
   }
   
   func thumbnail(atIndex: Int, finishedClosure: ((UIImage?)->())?) -> UIImage? {
