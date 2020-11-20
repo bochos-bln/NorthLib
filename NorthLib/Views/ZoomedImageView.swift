@@ -392,12 +392,14 @@ extension ZoomedImageView{
       self.setImage(image)
       return
     }
+    scrollView.isUserInteractionEnabled = false
     let contentOffset = scrollView.contentOffset
     self.setImage(image)
     let newSc = oldImg.size.width * scrollView.zoomScale / image.size.width
     scrollView.zoomScale = newSc
     scrollView.setContentOffset(contentOffset, animated: false)
     self.updateConstraintsForSize(self.bounds.size)
+    scrollView.isUserInteractionEnabled = true
   }
 }
 
