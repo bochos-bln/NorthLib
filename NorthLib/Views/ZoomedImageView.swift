@@ -158,6 +158,10 @@ open class ZoomedImageView: UIView, ZoomedImageViewSpec {
       }
     }
   }
+  
+  public func invalidateLayout(){
+    zoomOutAndCenter()
+  }
 }
 
 // MARK: - Setup

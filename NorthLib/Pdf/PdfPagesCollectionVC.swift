@@ -64,6 +64,18 @@ public class PdfPagesCollectionVC : ImageCollectionVC, CanRotate{
     self.pinBottomToSafeArea = false
   }
   
+  public override func viewWillTransition(to size: CGSize, with coordinator: UIViewControllerTransitionCoordinator) {
+    super.viewWillTransition(to: size, with: coordinator)
+    //Fix Issue iPad: rotation page is missalligned
+    //simple soloution due rotation animation is much longer
+    //worked on iPad Air 2
+    if let ziv = self.currentView as? ZoomedImageViewSpec {
+      onMainAfter(0.3) {
+        ziv.invalidateLayout()
+      }
+    }
+  }
+  
   public override func didReceiveMemoryWarning() {
     print("☠️☠️☠️\nRECIVE MEMORY WARNING\n☠️☠️☠️☠️\nPdfPagesCollectionVC->didReceiveMemoryWarning\n   ")
   }
