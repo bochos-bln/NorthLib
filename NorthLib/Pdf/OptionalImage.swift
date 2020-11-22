@@ -10,6 +10,8 @@ import Foundation
 import PDFKit
 
 
+
+
 // MARK: - ZoomedPdfImageSpec : OptionalImage (Protocol)
 public protocol ZoomedPdfImageSpec : OptionalImage, DoesLog {
   var sectionTitle: String? { get set}
@@ -148,5 +150,75 @@ public class ZoomedPdfImage: OptionalImageItem, ZoomedPdfImageSpec {
    
   }
   
+  //Device Types: iPhone, iPad
+  /**
+    iPhone: (personal categorization) What about Screen Scales
+      small: iPhone 5+, SE1
+      medium 6s, 7, 8, 12mini
+      large: 6s+, 7+, 8+, X, XS, 11, 11Pro, XR, SE2, 12, 12Pro
+      extra large: XSMax, 11 Pro Max, 12 Pro Max
+    iPad:
+      Mini 2-5 (7,9")
+      iPad 5-8th (9,7"-10,2")
+      Air 1-4 (9,7 / 10,5 / 10,9")
+      Pro 1.-4. Gen (9,7 / 11" / 12,9")
+    iPad Problematic
+      - older iPads have less CPU Power and smaller RAM => Max Zoom is Limited
+        => Limit scould be handled by 40% RAM Usage of Render Function
+          @see: PdfRenderService.swift => extension PDFPage => image/avoidRenderDueExpectedMemoryIssue
+        => so i can use higher zoom scales
+      - diffferent screen Scales let UserExperiance may be different e.g. difference between iPad and iPhone 5s
+      - different Padges with different Layout e.g. 2 Column vs. 6 Column make double Tap & Zoom difficult
+      - But User expects every time same depth
+      - is Double Tap 1 Level enought?  Problem User zoomed in 2nd Time he cannot go back to 1st Step by Double Tap
+      => Solutions
+        => Create Model wich allows more than 2 Presets
+        => may create own DSL
+        => structure needs Step 0 == 1:1, ...
+        => getter for next/prev/max
+        => bool if last render failed, and was higher than 1.0
+      ....Lets GO!
+   */
+}
+
+
+/**
+ 
+ 
+ Good Idea but What about RealLife?
+  Where is the Page base Resolution NEEDED?
+  Where is the current SCale memory? NEEDED?
+ 
+ */
+public struct ZoomScales {
+  public enum ZoomScaleType  {case iPhone, iPad}
+  
+  struct Steps {
+    static let iPad:[CGFloat] = [1,2,4,6,8]
+    static let iPhone:[CGFloat] = [1,3,7]
+  }
+  
+  var steps:[CGFloat]
+  public private(set) var type : ZoomScaleType
+  
+  public init(_ type : ZoomScaleType = .iPhone){
+    self.type = type
+    switch type {
+      case .iPhone:
+        steps = Steps.iPhone
+      case .iPad:
+        steps = Steps.iPad
+    }
+  }
+  
+  
+  public var currentScreenScale : CGFloat = 0
+  
+  //NEEDED?
+  public var nextScreenScale : CGFloat {
+    get {
+      return 2.0
+    }
+  }
   
 }
