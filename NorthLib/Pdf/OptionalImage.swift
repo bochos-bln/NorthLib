@@ -9,9 +9,6 @@
 import Foundation
 import PDFKit
 
-
-
-
 // MARK: - ZoomedPdfImageSpec : OptionalImage (Protocol)
 public protocol ZoomedPdfImageSpec : OptionalImage, DoesLog {
   var sectionTitle: String? { get set}
@@ -22,10 +19,6 @@ public protocol ZoomedPdfImageSpec : OptionalImage, DoesLog {
   var preventNextRenderingDueFailed: Bool { get }
   
   /// ratio between current zoom and next zoom
-  /// returns 1.0 if current zoom == max zoom, to zoom to max in ScrollView
-  /// for zoomScales [1,3,6] it returns for current Zoom Scale: [nil:3, 1:3, 3:2, 6:1]
-  var nextZoomStep : CGFloat? { get }
-  
   var doubleTapNextZoomStep : CGFloat? { get }
   
   func renderImageWithNextScale(finishedCallback: ((Bool) -> ())?)
@@ -70,19 +63,11 @@ public class ZoomedPdfImage: OptionalImageItem, ZoomedPdfImageSpec {
     }
   }
   
-  public var nextZoomStep: CGFloat? {
-    get {
-      return zoomScales.nextZoomStep2
-    }
-  }
-  
   public var doubleTapNextZoomStep: CGFloat? {
     get {
       return zoomScales.doubleTapNextZoomStep
     }
   }
-  
-  
   
   public var renderingStoped = false {
     didSet {
@@ -181,14 +166,10 @@ public class ZoomedPdfImage: OptionalImageItem, ZoomedPdfImageSpec {
    */
 }
 
-
 /**
- 
- 
  Good Idea but What about RealLife?
  Where is the Page base Resolution NEEDED?
  Where is the current SCale memory? NEEDED?
- 
  */
 
 
@@ -236,27 +217,12 @@ public class ZoomScales {
     if success {
       self.renderNextFailedCount = 0
       
-      let lastZoomStepIndex = currentZoomStepIndex ?? 0
-      
       if let currIdx = currentZoomStepIndex {
         self.currentZoomStepIndex = currIdx + 1
       }
       else {
         self.currentZoomStepIndex = 0
       }
-      
-      guard let lastZoom = zoomBehaviour.zoomSteps.valueAt(lastZoomStepIndex) else {
-        ///Logically currently not possible, but set next Step to nil to use default zoom step of view
-        self.nextZoomStep = nil
-        return
-      }
-      
-      guard let nextZoom = zoomBehaviour.zoomSteps.valueAt(lastZoomStepIndex + 1) else {
-        ///Last Zoom reached, no more so scroll view should set its zoom scale to 1.0
-        self.nextZoomStep = 1.0
-        return
-      }
-      self.nextZoomStep = nextZoom/lastZoom
     }
     else {
       self.renderNextFailedCount += 1
@@ -270,21 +236,6 @@ public class ZoomScales {
   var currentZoomStepIndex : Int? = nil {
     didSet{
       print("currentZoomStepIndex set to: \(currentZoomStepIndex)")
-    }
-  }
-  
-  /// ratio between current zoom and next zoom
-  /// returns 1.0 if current zoom == max zoom, to zoom to max in ScrollView
-  /// for zoomScales [1,3,6] it returns for current Zoom Scale: [nil:3, 1:3, 3:2, 6:1]
-  public var nextZoomStep : CGFloat?
-  
-  public var nextZoomStep2 : CGFloat? {
-    get {
-      //Did also not work due needed step << 1 because there is still the 3rd step!!??
-      if currentZoomStepIndex ?? 0 > 0 { return 1.0 }
-      guard let first = zoomBehaviour.zoomSteps.valueAt(0),
-            let second = zoomBehaviour.zoomSteps.valueAt(1) else { return 2.0 }
-      return second/first
     }
   }
   
