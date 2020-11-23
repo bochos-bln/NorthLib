@@ -94,6 +94,11 @@ open class PageCollectionVC: UIViewController {
   public func onDisplay(closure: @escaping (Int, OptionalView?)->()) {
     collectionView?.onDisplay(closure: closure)
   }
+  
+  /// Define closure to call when a cell is newly displayed
+  public func onEndDisplayCell(closure: @escaping (Int, OptionalView?)->()) {
+    collectionView?.onEndDisplayCell(closure: closure)
+  }
     
   /// Defines the closure which delivers the views to display
   open func viewProvider(provider: @escaping (Int, OptionalView?)->OptionalView) {

@@ -105,5 +105,37 @@ public class PdfPagesCollectionVC : ImageCollectionVC, CanRotate{
         return ziv
       }
     }
+    
+    onEndDisplayCell { (_, optionalView) in
+      guard let ziv = optionalView as? ZoomedImageView,
+            let _pdfImg = ziv.optionalImage as? ZoomedPdfImageSpec else { return }
+//      print(">> END DISPLAY \(ziv.hashValue)")
+      var pdfImg = _pdfImg
+      if ziv.imageView.image == pdfImg.image {
+//        print(">> END DISPLAY \(ziv.hashValue) set Images nil for pdf idx: \(pdfImg.pdfPageIndex)")
+        pdfImg.image = nil
+        ziv.imageView.image = nil
+      }
+    }
+    
+    onDisplay { (_, optionalView) in
+      guard let ziv = optionalView as? ZoomedImageView,
+            let pdfImg = ziv.optionalImage as? ZoomedPdfImageSpec else { return }
+//      print(">> START DISPLAY \(ziv.hashValue)")
+      if ziv.imageView.image == nil
+//          || ziv.imageView.image != pdfImg.image
+      {
+        ziv.optionalImage = pdfImg
+        
+        if pdfImg.image == nil {
+          pdfImg.renderFullscreenImageIfNeeded(finishedCallback: nil)
+        }
+        //!= nil // Waiting Image????
+        ziv.imageView.image = pdfImg.image
+        pdfImg.renderFullscreenImageIfNeeded(finishedCallback: nil)
+//        print(">> START DISPLAY \(ziv.hashValue) set Image for pdf idx: \(pdfImg.pdfPageIndex)")
+      }
+    }
   }
+  
 }

@@ -41,22 +41,24 @@ public class ZoomedPdfImage: OptionalImageItem, ZoomedPdfImageSpec {
   }
     
   public override weak var image: UIImage? {
-    willSet{
-      if zoomScales.currentZoomStepIndex ?? 0 > 0
-      && fullpageImage == nil {
-        //0 is fullpage 1 is small zoom
-        fullpageImage = image
-      }
-      
-      if newValue == nil {
+    didSet{
+      if image == nil {
         zoomScales.reset()
-        fullpageImage = nil
       }
     }
   }
   
-  private var fullpageImage : UIImage?
-  
+  /**
+   Next Challange: on disappear do not hold more than 1x scale!
+      => iPad Air 2 13MB => 84MB => 214MB Page disappear throw Away!
+      => Better Do Not hold any Resolution!!! >0.99 rendering is fast enought!
+   
+   Idea seams to work generelly but 2 Issues:
+    -  Black Screen in some situations
+   *****WHY****
+    - memory Leak! increasing from 40MB to 60MB ...but nit necesary!
+   
+   */
   public var preventNextRenderingDueFailed: Bool {
     get {
       return zoomScales.nextScreenScale != nil
@@ -69,19 +71,8 @@ public class ZoomedPdfImage: OptionalImageItem, ZoomedPdfImageSpec {
     }
   }
   
-  public var renderingStoped = false {
-    didSet {
-      print("rendering stoped imgW: \(image?.size.width) fpImageW: \(fullpageImage?.size.width)")
-      ///Throw away the big image and use just the fullpage image
-      if fullpageImage != image {
-        image = fullpageImage
-        ///set the zoom Model to be in fullpage state
-        #warning("Did not work due Image View still holds large Image")
-        zoomScales.reset()
-        zoomScales.setLastRenderSucceed(true)
-      }
-    }
-  }
+  public var renderingStoped = false
+  private var rendering = false
   
   public private(set) var pageDescription: String = ""
     
@@ -105,6 +96,15 @@ public class ZoomedPdfImage: OptionalImageItem, ZoomedPdfImageSpec {
       return
     }
     
+    if let currentScale = zoomScales.currentScreenScale,
+       scale == nextafter(0.01, currentScale) {
+      ///Requested Zoom is similar to current ...do not render my rendering is called twice
+      return
+    }
+    
+    if rendering { return }//Prevent double render
+    rendering = true
+    
     //Prevent Multiple time max rendering
     let baseWidth = UIScreen.main.bounds.width*UIScreen.main.scale
     log("Optional Image, render Image with scale: \(scale) is width: \(baseWidth*scale) 1:1 image width should be: \(baseWidth)")
@@ -112,8 +112,13 @@ public class ZoomedPdfImage: OptionalImageItem, ZoomedPdfImageSpec {
                             width: baseWidth*scale) { img in
       onMain { [weak self] in
         guard let self = self else { return }
-
-        if self.renderingStoped { return }/// handle cancelation
+        
+        self.rendering = false
+        
+        if self.renderingStoped {
+          /// handle cancelation
+          return
+        }
         
         guard let newImage = img else {
           self.log("Optional Image, render Image with scale: \(scale) FAILED")
@@ -121,7 +126,7 @@ public class ZoomedPdfImage: OptionalImageItem, ZoomedPdfImageSpec {
           finishedCallback?(false)
           return
         }
-        self.log("Optional Image, render Image with scale: \(scale) SUCCEED")
+        self.log("Optional Image, render Image with scale: \(scale) SUCCEED ImgSize: \(newImage.size), \(newImage.mbSize) MB")
         self.zoomScales.setLastRenderSucceed(true)
         self.image = newImage
         finishedCallback?(true)
@@ -254,6 +259,17 @@ public class ZoomScales {
       guard let currIdx = currentZoomStepIndex,
             let current = zoomBehaviour.zoomSteps.valueAt(currIdx) else { return second/first}
       return second/current
+    }
+  }
+  
+  /// Current Screen Scale for Rendering or nil if no more Rendering
+  public var currentScreenScale : CGFloat? {
+    get {
+      guard let currentStep = self.currentZoomStepIndex else {
+        ///Nothing is rendered yet, render first Step
+        return nil
+      }
+      return zoomBehaviour.zoomSteps.valueAt(currentStep)
     }
   }
   
