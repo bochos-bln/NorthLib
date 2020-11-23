@@ -26,6 +26,8 @@ public protocol ZoomedPdfImageSpec : OptionalImage, DoesLog {
   /// for zoomScales [1,3,6] it returns for current Zoom Scale: [nil:3, 1:3, 3:2, 6:1]
   var nextZoomStep : CGFloat? { get }
   
+  var doubleTapNextZoomStep : CGFloat? { get }
+  
   func renderImageWithNextScale(finishedCallback: ((Bool) -> ())?)
   func renderFullscreenImageIfNeeded(finishedCallback: ((Bool) -> ())?)
   func renderImageWithScale(scale: CGFloat, finishedCallback: ((Bool) -> ())?)
@@ -46,10 +48,21 @@ public class ZoomedPdfImage: OptionalImageItem, ZoomedPdfImageSpec {
   }
     
   public override weak var image: UIImage? {
-    didSet{
-      if image == nil { zoomScales.reset() }
+    willSet{
+      if zoomScales.currentZoomStepIndex ?? 0 > 0
+      && fullpageImage == nil {
+        //0 is fullpage 1 is small zoom
+        fullpageImage = image
+      }
+      
+      if newValue == nil {
+        zoomScales.reset()
+        fullpageImage = nil
+      }
     }
   }
+  
+  private var fullpageImage : UIImage?
   
   public var preventNextRenderingDueFailed: Bool {
     get {
@@ -59,11 +72,31 @@ public class ZoomedPdfImage: OptionalImageItem, ZoomedPdfImageSpec {
   
   public var nextZoomStep: CGFloat? {
     get {
-      return zoomScales.nextZoomStep
+      return zoomScales.nextZoomStep2
     }
   }
   
-  public var renderingStoped = false
+  public var doubleTapNextZoomStep: CGFloat? {
+    get {
+      return zoomScales.doubleTapNextZoomStep
+    }
+  }
+  
+  
+  
+  public var renderingStoped = false {
+    didSet {
+      print("rendering stoped imgW: \(image?.size.width) fpImageW: \(fullpageImage?.size.width)")
+      ///Throw away the big image and use just the fullpage image
+      if fullpageImage != image {
+        image = fullpageImage
+        ///set the zoom Model to be in fullpage state
+        #warning("Did not work due Image View still holds large Image")
+        zoomScales.reset()
+        zoomScales.setLastRenderSucceed(true)
+      }
+    }
+  }
   
   public private(set) var pageDescription: String = ""
     
@@ -173,8 +206,8 @@ public class ZoomScales {
                              minZoomStepIdxForTryAgain:Int)
 
   struct Steps {
-    static let iPad:ZoomBehaviour = ([1,2,4,6,8], 2, 1)
-    static let iPhone:ZoomBehaviour = ([1,3,7],2,1)
+    static let iPad:ZoomBehaviour = ([1,2.5,4], 2, 1)
+    static let iPhone:ZoomBehaviour = ([1,4,6],2,1)
     static var zoomBehaviour : ZoomBehaviour {
       get{
         /// May use the following in future
@@ -244,6 +277,34 @@ public class ZoomScales {
   /// returns 1.0 if current zoom == max zoom, to zoom to max in ScrollView
   /// for zoomScales [1,3,6] it returns for current Zoom Scale: [nil:3, 1:3, 3:2, 6:1]
   public var nextZoomStep : CGFloat?
+  
+  public var nextZoomStep2 : CGFloat? {
+    get {
+      //Did also not work due needed step << 1 because there is still the 3rd step!!??
+      if currentZoomStepIndex ?? 0 > 0 { return 1.0 }
+      guard let first = zoomBehaviour.zoomSteps.valueAt(0),
+            let second = zoomBehaviour.zoomSteps.valueAt(1) else { return 2.0 }
+      return second/first
+    }
+  }
+  
+  public var doubleTapNextZoomStep : CGFloat? {
+    get {
+      /**
+        User is on 1.0 double Tap => [1,4,6] return 4.0
+        User is on 4.0 and not 1st zoom step... double tap zoom out
+        User is on 6.0 and not 1st zoom step... double tap zoom to 4.0 which is 4/6
+          => User jumps between same zoom scales
+       */
+
+      guard let first = zoomBehaviour.zoomSteps.valueAt(0),
+            let second = zoomBehaviour.zoomSteps.valueAt(1) else { return 2.0 }
+      //There is no
+      guard let currIdx = currentZoomStepIndex,
+            let current = zoomBehaviour.zoomSteps.valueAt(currIdx) else { return second/first}
+      return second/current
+    }
+  }
   
   /// Next Screen Scale for Rendering or nil if no more Rendering
   public var nextScreenScale : CGFloat? {

@@ -300,14 +300,18 @@ extension ZoomedImageView{
        
     ///On Double Tap if not Min Zoom Scale zoom out to min Zoom Scale + eppsilon
     /// if user manually zoomed for just a bit, to see an effect
-    if scrollView.zoomScale > scrollView.minimumZoomScale + 0.2 {
+    if scrollView.zoomScale > 1.0 {
+      scrollView.setZoomScale(1.0, animated: true)
+    }
+    else if scrollView.zoomScale > scrollView.minimumZoomScale + 0.2 {
       scrollView.setZoomScale(scrollView.minimumZoomScale,
                               animated: true)
     }
-    else { ///Otherwise Zoom Out in to tap loacation
+    else { ///Otherwise Zoom In in to tap loacation
       let maxZoom = scrollView.maximumZoomScale
-      let zoom = (self.optionalImage as? ZoomedPdfImageSpec)?.nextZoomStep ?? 2.0
-        scrollView.maximumZoomScale = zoom
+      let zoom = (self.optionalImage as? ZoomedPdfImageSpec)?.doubleTapNextZoomStep ?? 2.0
+      
+      scrollView.maximumZoomScale = zoom
       
       log("double tap zoom to scrollView.maximumZoomScale: \(scrollView.maximumZoomScale)",
           logLevel: .Debug)
@@ -395,9 +399,6 @@ extension ZoomedImageView: UIScrollViewDelegate{
       closure(_optionalImage, { success in
         if success, let img = _optionalImage.image {
           self.updateImagewithHighResImage(img)
-        } else {
-          self.scrollView.maximumZoomScale = 1.0
-          self.scrollView.setZoomScale(1.0, animated: true)
         }
         self.highResImgRequested = false
       })
