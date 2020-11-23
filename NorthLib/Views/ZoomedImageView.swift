@@ -296,45 +296,18 @@ extension ZoomedImageView{
       self.layoutIfNeeded()
       return
     }
-    
-    //Multi Cases to switch between full page and 1:1 view
-    var doZoomOut = false
-    
-    if self.highResImgRequested == true {
-      doZoomOut = true
-    }
-    else if scrollView.zoomScale == scrollView.maximumZoomScale {
-      doZoomOut = true
-    }
-    else if scrollView.zoomScale >= 2 {
-      doZoomOut = true
-    }
-    else if let pdfi = optionalImage as? ZoomedPdfImage,
-       pdfi.preventNextRenderingDueFailed,
-       scrollView.zoomScale >= 1.0 {
-      doZoomOut = true
-    }
-    
-    ///Zoom Out if current zoom is maximum zoom
-    if doZoomOut{
+    #warning("@Ringo: CANGE OF PREVIOUS BEHAVIOUR USUALLY NEEDS TO BE COVERT BY TEST!! or manually tested!")
+       
+    ///On Double Tap if not Min Zoom Scale zoom out to min Zoom Scale + eppsilon
+    /// if user manually zoomed for just a bit, to see an effect
+    if scrollView.zoomScale > scrollView.minimumZoomScale + 0.2 {
       scrollView.setZoomScale(scrollView.minimumZoomScale,
                               animated: true)
     }
-      ///Otherwise Zoom Out in to tap loacation
-    else {
-      //WARNING CANGE OF PREVIOUS BEHAVIOUR USUALLY NEEDS TO BE COVERT BY TEST!!
+    else { ///Otherwise Zoom Out in to tap loacation
       let maxZoom = scrollView.maximumZoomScale
-      if let pdfImg = self.optionalImage as? ZoomedPdfImageSpec{
-        let nextZoomStep = pdfImg.nextZoomStep
-        if nextZoomStep == 1.0 {
-          scrollView.setZoomScale(scrollView.minimumZoomScale,
-                                  animated: true)
-          return
-        }
-        scrollView.maximumZoomScale = nextZoomStep
-      } else if scrollView.maximumZoomScale > 2.0 {
-        scrollView.maximumZoomScale = 2.0 
-      }
+      let zoom = (self.optionalImage as? ZoomedPdfImageSpec)?.nextZoomStep ?? 2.0
+        scrollView.maximumZoomScale = zoom
       
       log("double tap zoom to scrollView.maximumZoomScale: \(scrollView.maximumZoomScale)",
           logLevel: .Debug)
@@ -416,7 +389,6 @@ extension ZoomedImageView: UIScrollViewDelegate{
     if zoomEnabled,
       self.onHighResImgNeededZoomFactor <= scrollView.zoomScale,
       self.highResImgRequested == false,
-      (optionalImage as? ZoomedPdfImageSpec)?.canRequestHighResImg ?? true,
       let closure = onHighResImgNeededClosure {
       guard let _optionalImage = optionalImage else { return }
       self.highResImgRequested = true

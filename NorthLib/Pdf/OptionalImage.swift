@@ -20,38 +20,24 @@ public protocol ZoomedPdfImageSpec : OptionalImage, DoesLog {
   var pdfPageIndex: Int? { get }
   var renderingStoped: Bool { get }
   var preventNextRenderingDueFailed: Bool { get }
-  var nextZoomStep: CGFloat { get }
   
-  var canRequestHighResImg: Bool { get }
-  var nextRenderingZoomScale: CGFloat { get }
+  /// ratio between current zoom and next zoom
+  /// returns 1.0 if current zoom == max zoom, to zoom to max in ScrollView
+  /// for zoomScales [1,3,6] it returns for current Zoom Scale: [nil:3, 1:3, 3:2, 6:1]
+  var nextZoomStep : CGFloat? { get }
   
   func renderImageWithNextScale(finishedCallback: ((Bool) -> ())?)
   func renderFullscreenImageIfNeeded(finishedCallback: ((Bool) -> ())?)
   func renderImageWithScale(scale: CGFloat, finishedCallback: ((Bool) -> ())?)
 }
 
-extension ZoomedPdfImageSpec{
-  public var canRequestHighResImg: Bool {
-    get {
-      if preventNextRenderingDueFailed { return false }
-      log("canRequestHighResImg: \(nextRenderingZoomScale <= PdfDisplayOptions.Page.maxRenderingZoom) nextRenderingZoomScale \(nextRenderingZoomScale) <= \(PdfDisplayOptions.Page.maxRenderingZoom) PdfDisplayOptions.Page.maxRenderingZoom")
-      return nextRenderingZoomScale <= PdfDisplayOptions.Page.maxRenderingZoom
-    }
-  }
-  
-  public func renderImageWithNextScale(finishedCallback: ((Bool) -> ())?){
-    log("Optional Image, renderImageWithNextScale: \(self.nextRenderingZoomScale) current:\((image?.size.width ?? 0)/UIScreen.main.nativeBounds.width) nextRenderingZoomScale: \(nextRenderingZoomScale)")
-    renderImageWithScale(scale: self.nextRenderingZoomScale, finishedCallback:finishedCallback)
-  }
-}
-
 public class ZoomedPdfImage: OptionalImageItem, ZoomedPdfImageSpec {
-  public var preventNextRenderingDueFailed: Bool = false
-  
   public var sectionTitle: String?
   public var pageTitle: String?
   public private(set) var pdfUrl: URL?
   public private(set) var pdfPageIndex: Int?
+  
+  lazy var zoomScales = ZoomScales()
   
   convenience init(url:URL?, index:Int) {
     self.init()
@@ -59,59 +45,21 @@ public class ZoomedPdfImage: OptionalImageItem, ZoomedPdfImageSpec {
     self.pdfPageIndex = index
   }
     
-  var calculatedNextScreenZoomScale: CGFloat?
-  
-  public var nextRenderingZoomScale: CGFloat {
-    get{
-      if calculatedNextScreenZoomScale == nil {
-        calculatedNextScreenZoomScale = calculateNextScreenZoomScale
-      }
-      return calculatedNextScreenZoomScale!
-    }
-  }
-  
   public override weak var image: UIImage? {
     didSet{
-      calculatedNextScreenZoomScale = nil
-      preventNextRenderingDueFailed = false
+      if image == nil { zoomScales.reset() }
     }
   }
   
-  //want screen zoom scales 1, 4, 8, 12...
-  
-  var calculateNextScreenZoomScale: CGFloat {
-    get{
-      guard let img = self.image else { return 1.0 }
-      let currentScale = img.size.width/UIScreen.main.nativeBounds.width
-      #warning("TODO @Ringo MATH+KISS")
-      switch currentScale {
-        case _ where currentScale <= 1.0:
-          return 3.0
-        case _ where currentScale <= 3.0:
-          return 6.0//wrong fpr iPad!!!
-        default:
-          return PdfDisplayOptions.Page.maxRenderingZoom
-      }
-    }
-  }
-  #warning("TODO @Ringo MATH+KISS")
-  /**
-  iPad need other zoom steps
-   iPad 1x 2x 4/5x
-   iPhone 1x 3x 6x
-  
-  
-   */
-  ///returns the next zoom step ratio from current zoom step e.g. for scrollview to calculate how deep to zoom
-  public var nextZoomStep: CGFloat {
+  public var preventNextRenderingDueFailed: Bool {
     get {
-      ///Usually a ratio between current and next but issues with division by 0 and expensive cals use simple switch
-      /// Expect 3,6,max == 8
-      if nextRenderingZoomScale == 3.0 { return 3.0 }
-      else if nextRenderingZoomScale == PdfDisplayOptions.Page.maxRenderingZoom {
-        return PdfDisplayOptions.Page.maxRenderingZoom/3.0
-      }
-      return 2.0
+      return zoomScales.nextScreenScale != nil
+    }
+  }
+  
+  public var nextZoomStep: CGFloat? {
+    get {
+      return zoomScales.nextZoomStep
     }
   }
   
@@ -123,21 +71,40 @@ public class ZoomedPdfImage: OptionalImageItem, ZoomedPdfImageSpec {
     self.renderImageWithScale(scale:1.0, finishedCallback: finishedCallback)
   }
   
+  public func renderImageWithNextScale(finishedCallback: ((Bool) -> ())?){
+    renderImageWithScale(zoomScales.nextScreenScale, finishedCallback: finishedCallback)
+  }
+  
   public func renderImageWithScale(scale: CGFloat, finishedCallback: ((Bool) -> ())?) {
-    //Prevent Multiple time max rendering
-    if scale > PdfDisplayOptions.Page.maxRenderingZoom {
+    renderImageWithScale(scale, finishedCallback: finishedCallback)
+  }
+  
+  func renderImageWithScale(_ scale: CGFloat?, finishedCallback: ((Bool) -> ())?) {
+    guard let scale = scale else {
+      onMain {
+        finishedCallback?(false)
+      }
       return
     }
+    
+    //Prevent Multiple time max rendering
     let baseWidth = UIScreen.main.bounds.width*UIScreen.main.scale
     log("Optional Image, render Image with scale: \(scale) is width: \(baseWidth*scale) 1:1 image width should be: \(baseWidth)")
     PdfRenderService.render(item: self,
                             width: baseWidth*scale) { img in
       onMain { [weak self] in
         guard let self = self else { return }
-        self.log("Optional Image, render Image with scale done rendered?: \(img != nil)")
-        self.preventNextRenderingDueFailed = img == nil
-        guard let newImage = img else { finishedCallback?(false); return }
-        if self.renderingStoped { return }
+
+        if self.renderingStoped { return }/// handle cancelation
+        
+        guard let newImage = img else {
+          self.log("Optional Image, render Image with scale: \(scale) FAILED")
+          self.zoomScales.setLastRenderSucceed(false)
+          finishedCallback?(false)
+          return
+        }
+        self.log("Optional Image, render Image with scale: \(scale) SUCCEED")
+        self.zoomScales.setLastRenderSucceed(true)
         self.image = newImage
         finishedCallback?(true)
       }
@@ -186,39 +153,114 @@ public class ZoomedPdfImage: OptionalImageItem, ZoomedPdfImageSpec {
  
  
  Good Idea but What about RealLife?
-  Where is the Page base Resolution NEEDED?
-  Where is the current SCale memory? NEEDED?
+ Where is the Page base Resolution NEEDED?
+ Where is the current SCale memory? NEEDED?
  
  */
-public struct ZoomScales {
-  public enum ZoomScaleType  {case iPhone, iPad}
-  
+
+
+public class ZoomScales {
+  /// Zoom Behaviour for Device Type
+  /// - Parameters:
+  ///   - zoomSteps: the Zoom Steps from lowest Zoom usually 1 to heigest Zoom e.g. 8
+  ///                means Device Width * 8 is the width of the max Image
+  ///   - renderFailedLimit: After how Many Attempts the rendering should be stopped and not
+  ///                        tried again, depends on **minZoomStepIdxForTryAgain** if this is not reached rendering would be try again
+  ///   - minZoomStepIdxForTryAgain:min Step to reach to stop rendering on **renderFailedLimit**
+  ///                            maximum can only be zoomSteps.count
+  typealias ZoomBehaviour = (zoomSteps:[CGFloat],
+                             renderFailedLimit:Int,
+                             minZoomStepIdxForTryAgain:Int)
+
   struct Steps {
-    static let iPad:[CGFloat] = [1,2,4,6,8]
-    static let iPhone:[CGFloat] = [1,3,7]
-  }
-  
-  var steps:[CGFloat]
-  public private(set) var type : ZoomScaleType
-  
-  public init(_ type : ZoomScaleType = .iPhone){
-    self.type = type
-    switch type {
-      case .iPhone:
-        steps = Steps.iPhone
-      case .iPad:
-        steps = Steps.iPad
+    static let iPad:ZoomBehaviour = ([1,2,4,6,8], 2, 1)
+    static let iPhone:ZoomBehaviour = ([1,3,7],2,1)
+    static var zoomBehaviour : ZoomBehaviour {
+      get{
+        /// May use the following in future
+        /// public enum ZoomScaleType  {case phoneS, phoneM, phoneL, phoneXL, iPadS, iPadL}
+        switch Device.singleton {
+          case .iPhone:
+            return Steps.iPhone
+          case .iPad:
+            fallthrough
+          default:
+            return Steps.iPad
+        }
+      }
     }
   }
   
+  /// the Zoom behaviour
+  let zoomBehaviour : ZoomBehaviour = Steps.zoomBehaviour
+    
+  public func reset(){
+    self.renderNextFailedCount = 0
+    self.currentZoomStepIndex = nil
+  }
+    
+  public func setLastRenderSucceed(_ success : Bool){
+    if success {
+      self.renderNextFailedCount = 0
+      
+      let lastZoomStepIndex = currentZoomStepIndex ?? 0
+      
+      if let currIdx = currentZoomStepIndex {
+        self.currentZoomStepIndex = currIdx + 1
+      }
+      else {
+        self.currentZoomStepIndex = 0
+      }
+      
+      guard let lastZoom = zoomBehaviour.zoomSteps.valueAt(lastZoomStepIndex) else {
+        ///Logically currently not possible, but set next Step to nil to use default zoom step of view
+        self.nextZoomStep = nil
+        return
+      }
+      
+      guard let nextZoom = zoomBehaviour.zoomSteps.valueAt(lastZoomStepIndex + 1) else {
+        ///Last Zoom reached, no more so scroll view should set its zoom scale to 1.0
+        self.nextZoomStep = 1.0
+        return
+      }
+      self.nextZoomStep = nextZoom/lastZoom
+    }
+    else {
+      self.renderNextFailedCount += 1
+    }
+  }
   
-  public var currentScreenScale : CGFloat = 0
+  /// How many failed Renderings happen for next Zoom Scale
+  var renderNextFailedCount:Int = 0
+
+  /// current Index of zoomBehaviour.zoomSteps
+  var currentZoomStepIndex : Int? = nil {
+    didSet{
+      print("currentZoomStepIndex set to: \(currentZoomStepIndex)")
+    }
+  }
   
-  //NEEDED?
-  public var nextScreenScale : CGFloat {
+  /// ratio between current zoom and next zoom
+  /// returns 1.0 if current zoom == max zoom, to zoom to max in ScrollView
+  /// for zoomScales [1,3,6] it returns for current Zoom Scale: [nil:3, 1:3, 3:2, 6:1]
+  public var nextZoomStep : CGFloat?
+  
+  /// Next Screen Scale for Rendering or nil if no more Rendering
+  public var nextScreenScale : CGFloat? {
     get {
-      return 2.0
+      guard let currentStep = self.currentZoomStepIndex else {
+        ///Nothing is rendered yet, render first Step
+        return zoomBehaviour.zoomSteps.first
+      }
+      
+      if renderNextFailedCount > zoomBehaviour.renderFailedLimit,
+         currentStep >= zoomBehaviour.minZoomStepIdxForTryAgain {
+        ///Failed too much and zoom step is enought do not render anymore
+        return nil
+      }
+      
+      //return next if any or nil if last zoom reaches
+      return zoomBehaviour.zoomSteps.valueAt(currentStep+1)
     }
   }
-  
 }
