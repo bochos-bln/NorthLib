@@ -305,21 +305,18 @@ public class Overlay: NSObject, OverlaySpec, UIGestureRecognizerDelegate {
     }
   }
 
-  /**
-    **Bugfix**
-    On Collection View Background Snapshot is cut off on if particullary off-screen
-      - sourceFrame is correct => tested!
-      - 2 options
-        - #1 SourceView submit Image/Snapshot
-            => bigger Impact/refactor/codeChange
-        - #2 targetView will be used for snapshot and scaled to source if flag set
-            => is already displayable??? => spinner animation would look ugly!
-            => target view shows nothing in PDF Setup 🤮 (nothing: black or transparent view not the page...)
-      => #1 is the only solution
-   */
   
   // MARK: open fromFrame
-  public func openAnimated(fromFrame: CGRect, toFrame: CGRect, snapshot: UIView? = nil) {
+  /// open the overlay view animated, use snapshot from source/background view
+  /// - Parameters:
+  ///   - fromFrame: source frame for source snapshot
+  ///   - toFrame: target frame for overlay view
+  ///   - snapshot: provided snapshot, otherwise a new one will be created from source view with source frame
+  ///   - noTargetSnapshot: do not animate target snapshot, show target view without previous snapshot of it
+  public func openAnimated(fromFrame: CGRect,
+                           toFrame: CGRect,
+                           snapshot: UIView? = nil,
+                           animateTargetSnapshot : Bool = true) {
     addToActiveVC()
     closeAction = { self.close(fromRect: toFrame, toRect: fromFrame) }
     
@@ -335,14 +332,20 @@ public class Overlay: NSObject, OverlaySpec, UIGestureRecognizerDelegate {
       showWithoutAnimation()
       return
     }
-    guard let targetSnapshot = overlayVC.view.snapshotView(afterScreenUpdates: true) else {
-      showWithoutAnimation()
-      return
+    
+    var targetSnapshot : UIView?
+    
+    if animateTargetSnapshot {
+      guard let snap = overlayVC.view.snapshotView(afterScreenUpdates: true) else {
+        showWithoutAnimation()
+        return
+      }
+      targetSnapshot = snap
     }
     
     self.contentView?.isHidden = true
     overlayView?.isHidden = false
-    targetSnapshot.alpha = 0.0
+    targetSnapshot?.alpha = 0.0
     
     if debug {
       overlayView?.layer.borderColor = UIColor.green.cgColor
@@ -370,25 +373,34 @@ public class Overlay: NSObject, OverlaySpec, UIGestureRecognizerDelegate {
     fromSnapshot.contentMode = .scaleAspectFit
     
     overlayView?.addSubview(fromSnapshot)
-    overlayView?.addSubview(targetSnapshot)
+    if let ts = targetSnapshot {
+      overlayView?.addSubview(ts)
+    }
     
-    UIView.animateKeyframes(withDuration: openDuration, delay: 0, animations: {
-      UIView.addKeyframe(withRelativeStartTime: 0.0, relativeDuration: 0.3) {
+    
+    let ratio = animateTargetSnapshot ? 1.0 : 0.7
+    
+    UIView.animateKeyframes(withDuration: openDuration*ratio, delay: 0, animations: {
+            
+      UIView.addKeyframe(withRelativeStartTime: 0.0, relativeDuration: 0.3/ratio) {
         self.shadeView?.alpha = CGFloat(self.maxAlpha)
       }
-      UIView.addKeyframe(withRelativeStartTime: 0.0, relativeDuration: 0.7) {
+      UIView.addKeyframe(withRelativeStartTime: 0.0, relativeDuration: 0.7/ratio) {
         fromSnapshot.frame = toFrame
       }
-      UIView.addKeyframe(withRelativeStartTime: 0.7, relativeDuration: 0.15) {
-        targetSnapshot.alpha = 1.0
+      
+      if animateTargetSnapshot == false { return }
+      
+      UIView.addKeyframe(withRelativeStartTime: 0.7/ratio, relativeDuration: 0.15/ratio) {
+        targetSnapshot?.alpha = 1.0
       }
-      UIView.addKeyframe(withRelativeStartTime: 0.85, relativeDuration: 0.15) {
+      UIView.addKeyframe(withRelativeStartTime: 0.85/ratio, relativeDuration: 0.15/ratio) {
         fromSnapshot.alpha = 0.0
       }
       
     }) { (success) in
       self.contentView?.isHidden = false
-      targetSnapshot.removeFromSuperview()
+      targetSnapshot?.removeFromSuperview()
       fromSnapshot.removeFromSuperview()
     }
   }

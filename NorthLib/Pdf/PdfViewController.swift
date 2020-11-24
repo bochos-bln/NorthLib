@@ -99,7 +99,8 @@ open class PdfViewController : UIViewController, CanRotate{
       
       overlay.openAnimated(fromFrame: sourceFrame,
                            toFrame: self.pageController?.view.frame ?? CGRect.zero,
-                           snapshot:snapshot)
+                           snapshot:snapshot,
+                           animateTargetSnapshot: false)
     }
     
     self.view.addSubview(thumbnailController.view)
