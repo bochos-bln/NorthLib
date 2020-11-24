@@ -589,6 +589,7 @@ public class Overlay: NSObject, OverlaySpec, UIGestureRecognizerDelegate {
       //its had to zoom smaller than 0.1 on Device
       //if close ratio is 0.5, the limit would be reached at 0.15
       canCloseOnEnd = sv.zoomScale < closeRatio*0.5*sv.minimumZoomScale + 0.5*sv.minimumZoomScale
+      self.shadeView?.alpha =  max(0.3, min(2*sv.zoomScale-1, CGFloat(self.maxAlpha)))
       return;
     }
     ///handle pinch for non inner ScrollView ...do the zoom out here!
