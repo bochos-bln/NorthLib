@@ -305,13 +305,33 @@ public class Overlay: NSObject, OverlaySpec, UIGestureRecognizerDelegate {
     }
   }
 
-
+  /**
+    **Bugfix**
+    On Collection View Background Snapshot is cut off on if particullary off-screen
+      - sourceFrame is correct => tested!
+      - 2 options
+        - #1 SourceView submit Image/Snapshot
+            => bigger Impact/refactor/codeChange
+        - #2 targetView will be used for snapshot and scaled to source if flag set
+            => is already displayable??? => spinner animation would look ugly!
+            => target view shows nothing in PDF Setup 🤮 (nothing: black or transparent view not the page...)
+      => #1 is the only solution
+   */
   
   // MARK: open fromFrame
-  public func openAnimated(fromFrame: CGRect, toFrame: CGRect) {
+  public func openAnimated(fromFrame: CGRect, toFrame: CGRect, snapshot: UIView? = nil) {
     addToActiveVC()
     closeAction = { self.close(fromRect: toFrame, toRect: fromFrame) }
-    guard let fromSnapshot = activeVC.view.resizableSnapshotView(from: fromFrame, afterScreenUpdates: false, withCapInsets: .zero) else {
+    
+    var snapshot = snapshot
+    
+    if snapshot == nil {
+      snapshot = activeVC.view.resizableSnapshotView(from: fromFrame,
+                                                     afterScreenUpdates: false,
+                                                     withCapInsets: .zero)
+    }
+    
+    guard let fromSnapshot = snapshot else {
       showWithoutAnimation()
       return
     }

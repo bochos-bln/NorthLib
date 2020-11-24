@@ -89,7 +89,17 @@ open class PdfViewController : UIViewController, CanRotate{
       guard let self = self else { return }
       guard let overlay = self.overlay else { return }
       self.pageController?.pdfModel = pdfModel
-      overlay.openAnimated(fromFrame: sourceFrame, toFrame: self.pageController?.view.frame ?? CGRect.zero)
+      var snapshot:UIImageView?
+      if let pdfModel = pdfModel,
+         let thumb = pdfModel.thumbnail(atIndex: pdfModel.index,
+                                        finishedClosure: nil) {
+        snapshot = UIImageView(frame: sourceFrame)
+        snapshot?.image = thumb
+      }
+      
+      overlay.openAnimated(fromFrame: sourceFrame,
+                           toFrame: self.pageController?.view.frame ?? CGRect.zero,
+                           snapshot:snapshot)
     }
     
     self.view.addSubview(thumbnailController.view)
