@@ -354,8 +354,8 @@ public class Overlay: NSObject, OverlaySpec, UIGestureRecognizerDelegate {
       fromSnapshot.layer.borderColor = UIColor.red.cgColor
       fromSnapshot.layer.borderWidth = 2.0
       
-      targetSnapshot.layer.borderColor = UIColor.blue.cgColor
-      targetSnapshot.layer.borderWidth = 2.0
+      targetSnapshot?.layer.borderColor = UIColor.blue.cgColor
+      targetSnapshot?.layer.borderWidth = 2.0
       
       contentView?.layer.borderColor = UIColor.orange.cgColor
       contentView?.layer.borderWidth = 2.0
