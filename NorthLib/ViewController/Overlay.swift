@@ -575,21 +575,53 @@ public class Overlay: NSObject, OverlaySpec, UIGestureRecognizerDelegate {
   
   // MARK: - didPinchWith
   var pinchStartTransform: CGAffineTransform?
+  let panCloseRatio:CGFloat = 0.7 //ensure not 1!!
+  let panShadowRatio:CGFloat = 0.4 //ensure not 1!!
   var canCloseOnEnd = false
+  var widthToClose : CGFloat?
+  var heightToClose : CGFloat?
+  var _a : CGFloat = 0.0
+  var _b : CGFloat = 0.0
   @IBAction func didPinchWith(gestureRecognizer: UIPinchGestureRecognizer) {
     if let sv = otherGestureRecognizersScrollView {
-      //the .ended comes delayed, after the inner scrollview bounced back,
-      //so i remember the last value and close of pinch ended
-      //!Not closing due pinch this would be non natural behaviour
-      if canCloseOnEnd, gestureRecognizer.state == .ended {
-        self.close(animated: true)
+      if gestureRecognizer.state == .began {
+        if UIDevice.current.orientation.isLandscape {
+          heightToClose = panCloseRatio * sv.frame.size.height
+          widthToClose = nil
+          _a = 1/((1-panShadowRatio)*sv.frame.size.height)
+        } else {
+          heightToClose = nil
+          widthToClose = panCloseRatio * sv.frame.size.width
+          _a = 1/((1-panShadowRatio)*sv.frame.size.width)
+        }
+        _b = 1+1/(panShadowRatio-1)
+        canCloseOnEnd = false
       }
-      //The inner scrollview can zoom out to half of its minimum zoom factor
-      //e.g. minimum zoom factor = 0.2 current zooFactor = 0.2
-      //its had to zoom smaller than 0.1 on Device
-      //if close ratio is 0.5, the limit would be reached at 0.15
-      canCloseOnEnd = sv.zoomScale < closeRatio*0.5*sv.minimumZoomScale + 0.5*sv.minimumZoomScale
-      self.shadeView?.alpha =  max(0.3, min(2*sv.zoomScale-1, CGFloat(self.maxAlpha)))
+      else if gestureRecognizer.state == .ended {
+        if canCloseOnEnd {
+          self.close(animated: true)
+        } else {
+          UIView.animate(withDuration: closeDuration, animations: { [weak self] in
+            guard let self = self else { return }
+            self.shadeView?.alpha = CGFloat(self.maxAlpha)
+          })
+        }
+      }
+      else if gestureRecognizer.state == .changed {
+        if let minH = heightToClose {
+          /// Hack: use scrollviews contentSize height did not change on pinch close only on pinchOpen
+          /// width worked, may because of center and pinned contentView
+          /// if its not a propper solution calculate alpha with the relation of started and current width
+          let currH = sv.subviews.first?.frame.size.height ?? sv.contentSize.height
+          canCloseOnEnd = currH < minH
+          self.shadeView?.alpha = max(0.0, min(CGFloat(self.maxAlpha),currH*_a + _b))
+        }
+        else if let minW = widthToClose {
+          let currW = sv.contentSize.width
+          canCloseOnEnd = currW < minW
+          self.shadeView?.alpha = max(0.0, min(CGFloat(self.maxAlpha),currW*_a + _b))
+        }
+      }
       return;
     }
     ///handle pinch for non inner ScrollView ...do the zoom out here!
