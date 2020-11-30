@@ -37,17 +37,6 @@ open class PdfViewController : UIViewController, CanRotate{
       guard let self = self else { return nil}
       return self.thumbnailController?.frameAtIndex(index: self.pageController?.index ?? 0)
     })
-    
-//    detailController.onX { [weak self] in
-//      guard let self = self else { return}
-//      if let ziv = self.pageController?.currentView as? ZoomedImageView {
-//        print(">> onX \(ziv.hashValue) pdf"
-//              + " idx: \((ziv.optionalImage as? ZoomedPdfImageSpec)?.pdfPageIndex)")
-//      } else {
-//        print(">> onX ...not a ziv")
-//      }
-//    }
-//    return;
     detailController.onX { [weak self] in
       guard let self = self else { return}
       self.overlay?.close(animated: true)

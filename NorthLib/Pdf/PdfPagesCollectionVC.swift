@@ -57,8 +57,6 @@ public class PdfPagesCollectionVC : ImageCollectionVC, CanRotate{
   
   public override func viewDidLoad() {
     super.viewDidLoad()
-    #warning("TODO @Ringo on Menu appear white bg appears, set .clear did not work @NThies Ideas? in Caroussel this did not appear!")
-    self.collectionView?.backgroundColor = .clear//UIColor(white: 1.0, alpha: 0.95)//TODO::DARKMODE!
     self.pageControlMaxDotsCount = Device.singleton == .iPad ? 25 : 9
     self.pageControl?.layer.shadowColor = UIColor.lightGray.cgColor
     self.pageControl?.layer.shadowRadius = 3.0
@@ -114,10 +112,8 @@ public class PdfPagesCollectionVC : ImageCollectionVC, CanRotate{
     onEndDisplayCell { (_, optionalView) in
       guard let ziv = optionalView as? ZoomedImageView,
             let _pdfImg = ziv.optionalImage as? ZoomedPdfImageSpec else { return }
-//      print(">> END DISPLAY \(ziv.hashValue)")
       var pdfImg = _pdfImg
       if ziv.imageView.image == pdfImg.image {
-//        print(">> END DISPLAY \(ziv.hashValue) set Images nil for pdf idx: \(pdfImg.pdfPageIndex)")
         pdfImg.image = nil
         ziv.imageView.image = nil
       }
@@ -134,12 +130,9 @@ public class PdfPagesCollectionVC : ImageCollectionVC, CanRotate{
         if pdfImg.image == nil {
           pdfImg.renderFullscreenImageIfNeeded(finishedCallback: nil)
         }
-        //!= nil // Waiting Image????
         ziv.imageView.image = pdfImg.image
         pdfImg.renderFullscreenImageIfNeeded(finishedCallback: nil)
-//        print(">> START DISPLAY \(ziv.hashValue) set Image for pdf idx: \(pdfImg.pdfPageIndex)")
       }
     }
   }
-  
 }
