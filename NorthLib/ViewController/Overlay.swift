@@ -75,6 +75,9 @@ public class Overlay: NSObject, OverlaySpec, UIGestureRecognizerDelegate {
   
   // MARK: - onClose/onCloseHandler
   public func onClose(closure: (() -> ())?) {
+    if closure == nil {
+      self.closeAction = nil
+    }
     self.onCloseHandler = closure
   }
   

@@ -11,20 +11,25 @@ import UIKit
 //PagePDFVC array von pages mit Image und page
 /// Provides functionallity to view, zoom in PDF Pages. Swipe on Side Corner shows next/prev Page if available
 public class PdfPagesCollectionVC : ImageCollectionVC, CanRotate{
-  
-  public var menuItems: [(title: String, icon: String, closure: (String)->())] = [] {
-    didSet {
-      var newItems = menuItems
-      newItems.insert((title: "Zoom 1:1", icon: "1.magnifyingglass", closure: { [weak self] _ in
-        if let ziv = self?.currentView as? ZoomedImageView  {
-          ziv.scrollView.setZoomScale(1.0, animated: true)
-        }
-      }), at: 0)
-      menu.menu = newItems
+    
+  var _menuItems: [(title: String, icon: String, closure: (String)->())] = []
+  public var menuItems: [(title: String, icon: String, closure: (String)->())] {
+    get{
+      return _menuItems
+    }
+    set{
+      var newItems = newValue
+      if newItems.count > 0 {
+        newItems.insert((title: "Zoom 1:1", icon: "1.magnifyingglass", closure: { [weak self] _ in
+          if let ziv = self?.currentView as? ZoomedImageView  {
+            ziv.scrollView.setZoomScale(1.0, animated: true)
+          }
+        }), at: 0)
+      }
+      _menuItems = newItems
     }
   }
   
-  lazy var menu = ContextMenu(view: view)
     
   var pdfModel : PdfModel? {
     didSet{
@@ -118,12 +123,11 @@ public class PdfPagesCollectionVC : ImageCollectionVC, CanRotate{
       }
     }
     
-    onDisplay { (_, optionalView) in
+    onDisplay { [weak self] (idx, optionalView) in
       guard let ziv = optionalView as? ZoomedImageView,
             let pdfImg = ziv.optionalImage as? ZoomedPdfImageSpec else { return }
-//      print(">> START DISPLAY \(ziv.hashValue)")
+      ziv.menu.menu = self?.menuItems ?? []
       if ziv.imageView.image == nil
-//          || ziv.imageView.image != pdfImg.image
       {
         ziv.optionalImage = pdfImg
         

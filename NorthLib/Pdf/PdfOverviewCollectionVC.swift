@@ -12,13 +12,19 @@ import UIKit
 //may work just with IMages and delegate handles what hapen on tap
 public class PdfOverviewCollectionVC : UICollectionViewController, CanRotate{
   
-  public lazy var menu = ContextMenu(view: view)
+  /// Define the menu to display on long touch of a MomentView
+  public var menuItems: [(title: String, icon: String, closure: (String)->())] = [] {
+    didSet{
+      menu?.menu = menuItems
+    }
+  }
   public var cellLabelFont:UIFont? = UIFont.systemFont(ofSize: 8)
   
   // MARK: - Properties
   private let reuseIdentifier = "pdfCell"
   private let itemsPerRow:Int
   private let spacing:CGFloat
+  lazy var menu:ContextMenu? = ContextMenu(view: collectionView)
   
   lazy var generellItemSize : CGSize = {
     let width = min(UIScreen.main.bounds.size.width, UIScreen.main.bounds.size.height)

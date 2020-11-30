@@ -67,14 +67,18 @@ open class PdfViewController : UIViewController, CanRotate{
       for ctrl in self.children {
         ctrl.removeFromParent()
       }
-      pageController?.menu.menu = []
       pageController?.onX {}
       pageController?.pdfModel = nil
       pageController?.images = []
+      pageController?.menuItems = []
       pageController?.collectionView = nil
+      pageController?.removeFromParent()
       thumbnailController?.clickCallback = nil
       thumbnailController?.pdfModel = nil
+      thumbnailController?.menuItems = []
+      thumbnailController?.removeFromParent()
       thumbnailController = nil
+      overlay?.onClose(closure: nil)
       overlay?.onRequestUpdatedCloseFrame(closure: nil)
       pageController = nil
       overlay = nil
