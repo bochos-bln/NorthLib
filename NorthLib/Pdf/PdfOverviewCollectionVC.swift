@@ -81,6 +81,7 @@ public class PdfOverviewCollectionVC : UICollectionViewController, CanRotate{
         onMain { cell.imageView.image = img  }
       })
       cell.label.text = pdfModel.item(atIndex: indexPath.row)?.pageTitle
+//      cell.menu?.menu = self.menuItems //would be a leak!
     }
 
     return cell

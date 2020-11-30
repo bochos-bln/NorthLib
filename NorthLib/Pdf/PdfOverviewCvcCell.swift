@@ -12,6 +12,8 @@ class PdfOverviewCvcCell : UICollectionViewCell {
   
   let imageView = UIImageView()
   let label = UILabel()
+  //Looks strange and is a LEAK!
+//  public lazy var menu:ContextMenu? = ContextMenu(view: self)
   
   override init(frame: CGRect) {
     super.init(frame: frame)
