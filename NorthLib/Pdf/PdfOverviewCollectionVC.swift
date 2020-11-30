@@ -13,6 +13,7 @@ import UIKit
 public class PdfOverviewCollectionVC : UICollectionViewController, CanRotate{
   
   public lazy var menu = ContextMenu(view: view)
+  public var cellLabelFont:UIFont? = UIFont.systemFont(ofSize: 8)
   
   // MARK: - Properties
   private let reuseIdentifier = "pdfCell"
@@ -76,6 +77,7 @@ public class PdfOverviewCollectionVC : UICollectionViewController, CanRotate{
   public override func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
     let _cell = collectionView.dequeueReusableCell(withReuseIdentifier: reuseIdentifier, for: indexPath)
     guard let cell = _cell as? PdfOverviewCvcCell else { return _cell }
+    cell.label?.font = self.cellLabelFont
     if let pdfModel = self.pdfModel {
       cell.imageView?.image = pdfModel.thumbnail(atIndex: indexPath.row, finishedClosure: { (img) in
         onMain { cell.imageView?.image = img  }
