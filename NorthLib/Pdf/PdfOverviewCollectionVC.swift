@@ -52,10 +52,10 @@ public class PdfOverviewCollectionVC : UICollectionViewController, CanRotate{
   
   public override func viewDidLoad() {
     super.viewDidLoad()
-    collectionView!.showsVerticalScrollIndicator = false
-    collectionView!.showsHorizontalScrollIndicator = false
+    collectionView?.showsVerticalScrollIndicator = false
+    collectionView?.showsHorizontalScrollIndicator = false
     // Register cell classes
-    collectionView!.register(PdfOverviewCvcCell.self, forCellWithReuseIdentifier: reuseIdentifier)
+    collectionView?.register(PdfOverviewCvcCell.self, forCellWithReuseIdentifier: reuseIdentifier)
     if let cv = self.collectionView, let cvsv = cv.superview {
       pin(cv.bottom, to: cvsv.bottomGuide())
       pin(cv.top, to: cvsv.topGuide())
