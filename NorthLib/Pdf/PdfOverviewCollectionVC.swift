@@ -62,7 +62,7 @@ public class PdfOverviewCollectionVC : UICollectionViewController, CanRotate{
       pin(cv.right, to: cvsv.rightGuide())
     }
   }
-    
+  
   // MARK: UICollectionViewDataSource
   public override func numberOfSections(in collectionView: UICollectionView) -> Int {
     // #warning Incomplete implementation, return the number of sections
@@ -77,13 +77,12 @@ public class PdfOverviewCollectionVC : UICollectionViewController, CanRotate{
     let _cell = collectionView.dequeueReusableCell(withReuseIdentifier: reuseIdentifier, for: indexPath)
     guard let cell = _cell as? PdfOverviewCvcCell else { return _cell }
     if let pdfModel = self.pdfModel {
-      cell.imageView.image = pdfModel.thumbnail(atIndex: indexPath.row, finishedClosure: { (img) in
-        onMain { cell.imageView.image = img  }
+      cell.imageView?.image = pdfModel.thumbnail(atIndex: indexPath.row, finishedClosure: { (img) in
+        onMain { cell.imageView?.image = img  }
       })
-      cell.label.text = pdfModel.item(atIndex: indexPath.row)?.pageTitle
+      cell.label?.text = pdfModel.item(atIndex: indexPath.row)?.pageTitle
 //      cell.menu?.menu = self.menuItems //would be a leak!
     }
-
     return cell
   }
   

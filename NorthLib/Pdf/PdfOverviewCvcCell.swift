@@ -10,21 +10,25 @@ import UIKit
 
 class PdfOverviewCvcCell : UICollectionViewCell {
   
-  let imageView = UIImageView()
-  let label = UILabel()
+  let imageView:UIImageView? = UIImageView()
+  let label:UILabel? = UILabel()
   //Looks strange and is a LEAK!
 //  public lazy var menu:ContextMenu? = ContextMenu(view: self)
   
   override init(frame: CGRect) {
     super.init(frame: frame)
-    self.contentView.addSubview(imageView)
-    self.contentView.addSubview(label)
-    imageView.contentMode = .scaleAspectFit
-//    self.backgroundColor = .yellow
-    pin(imageView, to: contentView)
-    label.numberOfLines = 2
-//    label.font = Const.Fonts.contentFont(size: 8)
-    pin(label, to: contentView, exclude: .top)
+    
+    if let imageView = imageView {
+      imageView.contentMode = .scaleAspectFit
+      self.contentView.addSubview(imageView)
+      pin(imageView, to: contentView)
+    }
+    
+    if let label = label {
+      label.numberOfLines = 2
+      self.contentView.addSubview(label)
+      pin(label, to: contentView, exclude: .top)
+    }
   }
   
   required init?(coder: NSCoder) {
