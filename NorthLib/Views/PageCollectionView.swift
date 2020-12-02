@@ -285,7 +285,9 @@ open class PageCollectionView: UICollectionView, UICollectionViewDelegate,
   public func collectionView(_ collectionView: UICollectionView, 
     layout collectionViewLayout: UICollectionViewLayout,
     sizeForItemAt indexPath: IndexPath) -> CGSize {
-    let size = CGSize(width: pwidth, height: bounds.size.height)
+    let size = UIDevice.current.orientation.isLandscape
+      ? CGSize(width: pwidth, height: bounds.size.height - 180)
+      : CGSize(width: pwidth, height: bounds.size.height)
     return size
   }
   

@@ -364,6 +364,7 @@ open class WebView: WKWebView, WKScriptMessageHandler, UIScrollViewDelegate,
   }
   
   public func setup() {
+    self.configuration.preferences.setValue(true, forKey: "developerExtrasEnabled")
     self.navigationDelegate = self
     whenLinkPressed { (from, to) in self.linkPressed(from: from, to: to) }
   }
