@@ -17,7 +17,7 @@ import UIKit
  *  right) and removes it from the slider view. Following the shade and slider views
  *  are removed.
  */
-open class Slider: NSObject, DoesLog {
+open class Slider: NSObject, DoesLog, HandleOrientation {
   /// Default decoration height
   var decorationHeight: CGFloat = 20
   /// Default handle width
@@ -42,6 +42,9 @@ open class Slider: NSObject, DoesLog {
     get { return !isHorizontal && fromDefault }
     set { if !isHorizontal { fromDefault = newValue } }
   }
+  
+  // Closure called upon orientation changes
+  public var orientationChangedClosure = OrientationClosure()
   /// how much of the active view controller is covered by the slider
   /// (80% by default)
   public var coverageRatio: CGFloat = 0.8 { didSet { resetConstraints() } }
@@ -286,6 +289,12 @@ open class Slider: NSObject, DoesLog {
     if isHorizontal { if ics.width > 0 { coverage = ics.width } }
     else { if ics.height > 0 { coverage = ics.height } }
     resetConstraints()
+    
+    onOrientationChange{ [weak self] in
+      onMainAfter {
+        self?.resetConstraints()
+      }
+    }
   }
   
   public func slide(toOpen: Bool, animated: Bool = true) {
