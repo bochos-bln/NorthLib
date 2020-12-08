@@ -125,13 +125,13 @@ public class PdfPagesCollectionVC : ImageCollectionVC, CanRotate{
       ziv.menu.menu = self?.menuItems ?? []
       if ziv.imageView.image == nil
       {
+        ziv.optionalImage = pdfImg
+        
         if pdfImg.image == nil {
-          ///set the optionalImage ensures correct size of imageViews Image
-          ziv.optionalImage = pdfImg
-          pdfImg.renderFullscreenImageIfNeeded { _ in
-            ziv.optionalImage = pdfImg
-          }
+          pdfImg.renderFullscreenImageIfNeeded(finishedCallback: nil)
         }
+        ziv.imageView.image = pdfImg.image
+        pdfImg.renderFullscreenImageIfNeeded(finishedCallback: nil)
       }
     }
   }
