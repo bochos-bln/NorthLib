@@ -81,23 +81,14 @@ open class PageCollectionView: UICollectionView, UICollectionViewDelegate,
         contentView.subviews.forEach { $0.removeFromSuperview() }
         let page = provider(idx, self.page)
         let isAvailable = page.isAvailable
-        page.activeView.addBorder(UIColor.yellow.withAlphaComponent(0.5), 5)
         if pcv.scrollFromLeftToRight {
-          page.activeView.transform
-            = CGAffineTransform(rotationAngle: -CGFloat.pi)
+          page.activeView.transform = CGAffineTransform(rotationAngle: -CGFloat.pi)
         }
-        else {
-          page.activeView.transform
-            = .identity
-        }
-
+        else { page.activeView.transform = .identity }
         contentView.addSubview(page.activeView)
         pin(page.activeView, to: contentView)
         self.page = page
-
-        if isAvailable {
-          page.loadView()
-        }
+        if isAvailable { page.loadView() }
         else {
           let iPath = IndexPath(item: idx, section: 0)
           page.whenAvailable { pcv.reloadItems(at: [iPath]) }
@@ -107,8 +98,6 @@ open class PageCollectionView: UICollectionView, UICollectionViewDelegate,
     
     override init(frame: CGRect) {
       super.init(frame: frame)
-      self.addBorder(UIColor.red.withAlphaComponent(0.8), 1)
-      self.contentView.addBorder(UIColor.blue.withAlphaComponent(0.5), 3)
     }
     required init?(coder: NSCoder) {
       super.init(coder: coder)
@@ -296,9 +285,7 @@ open class PageCollectionView: UICollectionView, UICollectionViewDelegate,
   public func collectionView(_ collectionView: UICollectionView, 
     layout collectionViewLayout: UICollectionViewLayout,
     sizeForItemAt indexPath: IndexPath) -> CGSize {
-    let size = UIDevice.current.orientation.isLandscape
-      ? CGSize(width: pwidth, height: bounds.size.height - 180)
-      : CGSize(width: pwidth, height: bounds.size.height)
+    let size = CGSize(width: pwidth, height: bounds.size.height)
     return size
   }
   
