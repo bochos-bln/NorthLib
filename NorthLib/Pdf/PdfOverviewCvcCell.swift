@@ -12,15 +12,13 @@ class PdfOverviewCvcCell : UICollectionViewCell {
   
   let imageView:UIImageView? = UIImageView()
   let label:UILabel? = UILabel()
-  //Looks strange and is a LEAK!
   var menu:ContextMenu?
   
   override init(frame: CGRect) {
     super.init(frame: frame)
-    menu = ContextMenu(view: self)
-    let menuItems = [(title: "test", icon: "eye.slash", closure: { (_:String) in })]
-    menu?.menu = menuItems
-    
+    if let iv = imageView {
+      menu = ContextMenu(view: iv)
+    }
     if let imageView = imageView {
       imageView.contentMode = .scaleAspectFit
       self.contentView.addSubview(imageView)

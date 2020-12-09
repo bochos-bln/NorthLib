@@ -13,18 +13,13 @@ import UIKit
 public class PdfOverviewCollectionVC : UICollectionViewController, CanRotate{
   
   /// Define the menu to display on long touch of a MomentView
-  public var menuItems: [(title: String, icon: String, closure: (String)->())] = [] {
-    didSet{
-      menu?.menu = menuItems
-    }
-  }
+  public var menuItems: [(title: String, icon: String, closure: (String)->())] = [] 
   public var cellLabelFont:UIFont? = UIFont.systemFont(ofSize: 8)
   
   // MARK: - Properties
   private let reuseIdentifier = "pdfCell"
   private let itemsPerRow:Int
   private let spacing:CGFloat
-  lazy var menu:ContextMenu? = ContextMenu(view: collectionView)
   
   lazy var generellItemSize : CGSize = {
     let width = min(UIScreen.main.bounds.size.width, UIScreen.main.bounds.size.height)
@@ -89,7 +84,7 @@ public class PdfOverviewCollectionVC : UICollectionViewController, CanRotate{
         onMain { cell.imageView?.image = img  }
       })
       cell.label?.text = pdfModel.item(atIndex: indexPath.row)?.pageTitle
-//      cell.menu?.menu = self.menuItems //would be a leak!
+      cell.menu?.menu = self.menuItems //would be a leak!
     }
     return cell
   }
