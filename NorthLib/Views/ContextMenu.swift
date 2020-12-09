@@ -15,7 +15,7 @@ import UIKit
 open class ContextMenu: NSObject, UIContextMenuInteractionDelegate {
   
   /// The view on which to show the context menu
-  public var view: UIView?
+  public var view: UIView
   ///by default the UITargetedPreview animates from real size to ScreenFitting Size
   ///for a large image view in a scroll view, this can lead to an abnormal animation/behaviour
   public var smoothPreviewForImage: Bool = false
@@ -34,16 +34,16 @@ open class ContextMenu: NSObject, UIContextMenuInteractionDelegate {
   public var menu: [(title: String, icon: String, closure: (String)->())] = [] {
     willSet {
       if menu.count == 0 {
-        view?.isUserInteractionEnabled = true
+        view.isUserInteractionEnabled = true   
         if #available(iOS 13.0, *) {
           let menuInteraction = UIContextMenuInteraction(delegate: self)
-          view?.addInteraction(menuInteraction)
+          view.addInteraction(menuInteraction)
         }
         else {
           let longTouch = UILongPressGestureRecognizer(target: self, 
                             action: #selector(actionMenuTapped))
           longTouch.numberOfTouchesRequired = 1
-          view?.addGestureRecognizer(longTouch)
+          view.addGestureRecognizer(longTouch)
         }
       }      
     }
@@ -96,11 +96,6 @@ open class ContextMenu: NSObject, UIContextMenuInteractionDelegate {
       /// prevent the white background wich is default and appear in some cases as white outline
       let params = UIPreviewParameters()
       params.backgroundColor = .black
-    
-      guard let view = view else {
-        //Use Default Menu Appeariance
-        return nil
-      }
       
       let preview = UIImageView(frame: CGRect(origin: CGPoint.zero,
                                               size: view.frame.size))
