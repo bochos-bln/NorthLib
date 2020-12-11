@@ -7,6 +7,7 @@
 
 import UIKit
 import WebKit
+import AVFoundation
 
 /// A JSCall-Object describes a native call from JavaScript to Swift
 open class JSCall: DoesLog, ToString {
@@ -576,5 +577,49 @@ open class ButtonedWebView: UIView {
   
   public override func layoutSubviews() {
     adaptLayoutConstraints()
+  }
+}
+
+public class SpeechSynthesizer : AVSpeechSynthesizer, AVSpeechSynthesizerDelegate {
+  static func speak(_ attributedString:NSAttributedString){
+    let textParagraphs = attributedString.string.components(separatedBy: "\n")
+    for pieceOfText in textParagraphs {
+      let speechUtterance = AVSpeechUtterance(string: pieceOfText)
+      speechUtterance.voice = germanVoice
+      speechUtterance.postUtteranceDelay = 0.005
+      sharedInstance.speak(speechUtterance)
+      sharedInstance.lastSpeechUtterance = speechUtterance
+    }
+  }
+  
+  public func speechSynthesizer(_ synthesizer: AVSpeechSynthesizer, didFinish utterance: AVSpeechUtterance) {
+    if utterance == lastSpeechUtterance, lastSpeechUtterance != nil {
+      finishedClosure?()
+    }
+  }
+  
+  public static let sharedInstance = SpeechSynthesizer()
+  private static let germanVoice = AVSpeechSynthesisVoice(language: "de-DE")
+  private override init(){
+    super.init()
+    self.delegate = self
+  }
+  var finishedClosure:(()->())?
+  var lastSpeechUtterance:AVSpeechUtterance?
+}
+
+extension WKWebView {
+  public func speakHtmlContent(_ finishedClosure:@escaping (()->())) {
+    self.evaluateJavaScript("document.body.innerHTML.toString()",
+                               completionHandler: { (html: Any?, error: Error?) in
+                                if let htmlString = html as? String,
+                                   let attrString = htmlString.htmlAttributed{
+                                  SpeechSynthesizer.speak(attrString)
+                                  SpeechSynthesizer.sharedInstance.finishedClosure = finishedClosure
+                                }
+                                else {
+                                  SpeechSynthesizer.speak(NSAttributedString(string: "kein Inhalt gefunden"))
+                                }
+    })
   }
 }
