@@ -341,6 +341,9 @@ open class HttpSession: NSObject, URLSessionDelegate, URLSessionTaskDelegate, UR
     for (key,val) in header {
       req[key] = val
     }
+//    if header["X-tazAppAuthKey"] == nil {
+//      Toast.show("Create Request without Auth!")
+//    }
     return .success(req)
   }
 
@@ -359,6 +362,7 @@ open class HttpSession: NSObject, URLSessionDelegate, URLSessionTaskDelegate, UR
     guard var req = try? res.get()
       else { closure(.failure(res.error()!)); return }
     req.httpMethod = "GET"
+    debugRequest(req)
     if from != 0 { req["Range"] = "bytes=\(from)-" }
     let task = session.dataTask(with: req)
     createJob(task: task) { (job) in
@@ -375,10 +379,28 @@ open class HttpSession: NSObject, URLSessionDelegate, URLSessionTaskDelegate, UR
       else { closure(.failure(res.error()!)); return }
     req.httpMethod = "POST"
     req.httpBody = data
+    debugRequest(req)
     let task = session.dataTask(with: req)
     createJob(task: task) { (job) in
       if returnOnMain { onMain { closure(job.result) } }
       else { closure(job.result) }
+    }
+  }
+  
+  func debugRequest(_ req: URLRequest) {
+    var ds = "Data: -"
+    if let d = req.httpBody {
+      ds = "Data: " + String(decoding: d, as: UTF8.self)
+    }
+    
+    if let akey = req.value(forHTTPHeaderField: "X-tazAppAuthKey"), akey.length > 10 {
+//
+//      log("HAS AUTH REQUEST SEND M: \(req.httpMethod ?? "-") Path: \(req.url?.lastPathComponent) \(ds)")
+//      Toast.show("HAS AUTH")
+    }
+    else {
+      log("**UNAUTH** REQUEST SEND M: \(req.httpMethod) Path: \(req.url?.lastPathComponent) \(ds)")
+      Toast.show("UNAUTH")
     }
   }
     
